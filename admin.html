@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم المشرف</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* ... (نفس أكواد الـ CSS الخاصة بك) ... */
+        :root {
+            --primary-color: #6C5CE7;
+            --secondary-color: #A29BFE;
+            --dark-color: #2D3436;
+            --light-color: #F5F6FA;
+            --accent-color: #00CE9F;
+            --danger-color: #E74C3C;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        body {
+            background-color: var(--light-color);
+            color: var(--dark-color);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 0;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .header-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+        .header-btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: var(--accent-color);
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .header-btn i {
+            margin-left: 5px;
+        }
+        .header-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        .search-container {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .search-container input {
+            flex-grow: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+            text-align: right;
+            min-width: 200px;
+        }
+        .admin-panel {
+            margin-top: 30px;
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .panel-title {
+            font-size: 22px;
+            color: var(--primary-color);
+            margin: 0;
+        }
+        .users-list {
+            margin-top: 20px;
+        }
+        .user-card {
+            background-color: var(--light-color);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            flex-wrap: wrap;
+        }
+        .user-info {
+            flex: 1;
+            min-width: 250px;
+        }
+        .user-email {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .user-detail {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .user-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .btn-success {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        .btn-warning {
+            background-color: #F39C12;
+            color: white;
+        }
+        .btn-info {
+            background-color: #3498DB;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn-delete {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .btn-logout-force {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn-edit {
+            background-color: #2ECC71;
+            color: white;
+        }
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-title {
+            font-size: 20px;
+            color: var(--primary-color);
+        }
+        .close-modal {
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            font-family: 'Tajawal', sans-serif;
+            text-align: right;
+        }
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .status-active {
+            color: #27AE60;
+        }
+        .status-disabled {
+            color: #E74C3C;
+        }
+        .year-display {
+            padding: 8px 15px;
+            background-color: #ddd;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .logo {
+                margin-bottom: 10px;
+            }
+            .header-buttons {
+                width: 100%;
+                justify-content: center;
+            }
+            .header-btn {
+                flex: 1 1 auto;
+                justify-content: center;
+            }
+            .search-container {
+                flex-direction: column;
+            }
+            .panel-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- [تعديل] إضافة حاوية رئيسية مخفية -->
+    <div id="page-content" style="display: none;">
+
+        <header>
+            <div class="container header-content">
+                <div class="logo">AMG MANAGEMENT</div>
+                <div class="header-buttons">
+                    <a href="Move_lec.html" class="header-btn" style="background-color: #F39C12;">
+                        <i class="fas fa-exchange-alt"></i> نقل المحاضرات
+                    </a>
+                    <a href="manage_monthes.html" class="header-btn" style="background-color: #3498DB;">
+                        <i class="fas fa-calendar-alt"></i> إدارة الشهور
+                    </a>
+                    <a href="exam_degrees.html" class="header-btn">
+                        <i class="fas fa-list-alt"></i> نتائج الامتحانات
+                    </a>
+                    <a href="add_lec.html" class="header-btn">
+                        <i class="fas fa-upload"></i> رفع محاضرة
+                    </a>
+                    <a href="make code.html" class="header-btn"> <!-- [تعديل] تم توحيد الصفحة إلى make code.html -->
+                        <i class="fas fa-user-plus"></i> إنشاء أكواد
+                    </a>
+                    <button class="header-btn" id="logout-btn" style="background-color: var(--danger-color);">
+                        <i class="fas fa-sign-out-alt"></i> تسجيل خروج
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="container">
+            <div class="admin-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">إدارة الأعضاء</h2>
+                </div>
+
+                <div class="search-container">
+                    <input type="text" id="user-search" placeholder="ابحث عن طالب بالبريد الإلكتروني أو السنة الدراسية...">
+                </div>
+
+                <div id="alert-message"></div>
+
+                <div class="users-list" id="users-list">
+                    <div style="text-align: center; padding: 20px;">
+                        <p>جاري تحميل بيانات الأعضاء...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ... (كل النوافذ المنبثقة Modals كما هي) ... -->
+        <div class="modal" id="edit-user-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">تعديل وقت التعطيل</h3>
+                    <span class="close-modal">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="edit-disable-date">تاريخ التعطيل</label>
+                        <input type="date" id="edit-disable-date" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-disable-time">وقت التعطيل</label>
+                        <input type="time" id="edit-disable-time" class="form-control">
+                    </div>
+                    <input type="hidden" id="edit-user-id">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary close-modal-btn">إلغاء</button>
+                    <button type="button" class="btn btn-primary" id="confirm-edit-btn">
+                        <span id="confirm-edit-text">حفظ التعديلات</span>
+                        <span id="confirm-edit-loader" class="loading" style="display: none;"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="modal" id="clear-device-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">تغيير الجهاز</h3>
+                    <span class="close-modal">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <p>هل أنت متأكد أنك تريد مسح معرف الجهاز لهذا العضو؟ هذا سيسمح له بتسجيل الدخول من جهاز جديد.</p>
+                    <input type="hidden" id="clear-device-user-id">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary close-modal-btn">إلغاء</button>
+                    <button type="button" class="btn btn-info" id="confirm-clear-device-btn">
+                        <span id="confirm-clear-device-text">تأكيد</span>
+                        <span id="confirm-clear-device-loader" class="loading" style="display: none;"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="modal" id="force-logout-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">تسجيل خروج إجباري</h3>
+                    <span class="close-modal">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <p>هل أنت متأكد أنك تريد تسجيل خروج هذا العضو إجباريًا؟</p>
+                    <input type="hidden" id="force-logout-user-id">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary close-modal-btn">إلغاء</button>
+                    <button type="button" class="btn btn-danger" id="confirm-force-logout-btn">
+                        <span id="confirm-force-logout-text">تأكيد</span>
+                        <span id="confirm-force-logout-loader" class="loading" style="display: none;"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="modal" id="toggle-status-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="toggle-status-title">تعطيل الحساب</h3>
+                    <span class="close-modal">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <p id="toggle-status-message">هل أنت متأكد أنك تريد تعطيل هذا الحساب؟</p>
+                    <input type="hidden" id="toggle-user-id">
+                    <input type="hidden" id="current-status">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary close-modal-btn">إلغاء</button>
+                    <button type="button" class="btn btn-warning" id="confirm-toggle-btn">
+                        <span id="confirm-toggle-text">تأكيد</span>
+                        <span id="confirm-toggle-loader" class="loading" style="display: none;"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="modal" id="delete-user-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">حذف الحساب</h3>
+                    <span class="close-modal">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <p>هل أنت متأكد أنك تريد حذف هذا الحساب نهائيًا؟ هذا الإجراء لا يمكن التراجع عنه.</p>
+                    <input type="hidden" id="delete-user-id">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary close-modal-btn">إلغاء</button>
+                    <button type="button" class="btn btn-danger" id="confirm-delete-btn">
+                        <span id="confirm-delete-text">حذف</span>
+                        <span id="confirm-delete-loader" class="loading" style="display: none;"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div> <!-- [تعديل] إغلاق الحاوية الرئيسية -->
+
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-functions-compat.js"></script>
+
+    <script>
+        // منع فتح فحص العنصر
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.onkeydown = function(e) {
+            if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === 'I') || (e.ctrlKey && e.shiftKey && e.key === 'C') || (e.ctrlKey && e.shiftKey && e.key === 'J')) {
+                return false;
+            }
+        };
+
+        // تهيئة Firebase
+        const firebaseConfig = {
+            apiKey: 'AIzaSyCdqYrVFspJ4rZwidfaPtc9PYpNlQQm09k',
+            appId: '1:284879336757:web:1f42836c2382d11b73087c',
+            messagingSenderId: '284879336757',
+            projectId: 'amgg-81ac3',
+            authDomain: 'amgg-81ac3.firebaseapp.com',
+            databaseURL: 'https://amgg-81ac3-default-rtdb.firebaseio.com',
+            storageBucket: 'amgg-81ac3.firebasestorage.app',
+            measurementId: 'G-FMZW8S6WES',
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // ==========================================================
+        // ========== حارس الأمان (Admin Guard) ==========
+        // ==========================================================
+        const auth = firebase.auth();
+        const database = firebase.database();
+        const functions = firebase.functions();
+
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                // 1. المستخدم مسجل دخوله، نتأكد الآن هل هو أدمن؟
+                database.ref(`admins/${user.uid}`).once('value', snapshot => {
+                    if (snapshot.exists()) {
+                        // 2. نعم، هو أدمن. اسمح له برؤية الصفحة
+                        console.log('Admin access granted.');
+                        document.getElementById('page-content').style.display = 'block';
+                        
+                        // [هام] استدعاء الدالة الرئيسية لبدء تشغيل الصفحة
+                        initializeAppLogic(); 
+                        
+                    } else {
+                        // 3. هو مستخدم عادي، ليس أدمن. اطرده
+                        alert('ليس لديك صلاحيات الوصول لهذه الصفحة.');
+                        auth.signOut();
+                        window.location.href = 'index.html';
+                    }
+                });
+            } else {
+                // 4. المستخدم غير مسجل دخوله أصلاً. اطرده
+                console.log('User not logged in. Redirecting...');
+                window.location.href = 'index.html';
+            }
+        });
+        // ==========================================================
+        // ========== نهاية حارس الأمان ==========
+        // ==========================================================
+
+
+        // [تعديل] تغليف كل الكود الأصلي المتبقي
+        function initializeAppLogic() {
+        
+            let allUsersData = {};
+            let searchTimeout;
+
+            // دالة لعرض رسالة تنبيه
+            function showAlert(message, type = 'success') {
+                const alertDiv = document.getElementById('alert-message');
+                alertDiv.innerHTML = `
+                    <div class="alert alert-${type}">
+                        ${message}
+                    </div>
+                `;
+                setTimeout(() => {
+                    alertDiv.innerHTML = '';
+                }, 5000);
+            }
+
+            // دالة تسجيل الخروج
+            function logout() {
+                auth.signOut().then(() => {
+                    showAlert('تم تسجيل الخروج بنجاح.', 'success');
+                    window.location.href = 'index.html'; // توجيه لصفحة الدخول
+                }).catch(error => {
+                    console.error("Logout Error:", error);
+                    showAlert('حدث خطأ أثناء تسجيل الخروج', 'danger');
+                });
+            }
+
+
+            // تحويل الطابع الزمني إلى تنسيق تاريخ ووقت محلي
+            function formatTimestamp(timestamp) {
+                if (!timestamp) return 'غير محدد';
+                const date = new Date(timestamp);
+                const formattedDate = date.toLocaleDateString('ar-EG', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                const formattedTime = date.toLocaleTimeString('ar-EG', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                return `${formattedDate} الساعة ${formattedTime}`;
+            }
+
+            // دالة لعرض المستخدمين على الصفحة
+            function displayUsers(users) {
+                const usersList = document.getElementById('users-list');
+                usersList.innerHTML = '';
+
+                if (!users || Object.keys(users).length === 0) {
+                    usersList.innerHTML = '<div style="text-align: center; padding: 20px;"><p>لا يوجد أعضاء مطابقون للبحث</p></div>';
+                    return;
+                }
+
+                for (const userId in users) {
+                    const user = users[userId];
+                    let isDisabled = user.isDisabled || false;
+                    const disableTimestamp = user.disableTimestamp;
+                    if (disableTimestamp && disableTimestamp < Date.now()) {
+                        isDisabled = true;
+                    }
+                    
+                    const deviceId = user.deviceId || 'غير معروف';
+                    const userYear = user.year || 'غير محدد';
+                    const disableDate = disableTimestamp ? formatTimestamp(disableTimestamp) : 'غير محدد';
+
+                    const userCard = document.createElement('div');
+                    userCard.className = 'user-card';
+                    userCard.innerHTML = `
+                        <div class="user-info">
+                            <div class="user-email">البريد الإلكتروني: ${user.email || 'غير معروف'}</div>
+                            <div class="user-detail">معرف الجهاز: ${deviceId}</div>
+                            <div class="user-detail">
+                                السنة الدراسية: <span class="year-display">${userYear}</span>
+                            </div>
+                            <div class="user-detail">
+                                حالة الحساب: <span class="status-${isDisabled ? 'disabled' : 'active'}">
+                                    ${isDisabled ? 'معطل' : 'نشط'}
+                                </span>
+                            </div>
+                            <div class="user-detail">
+                                وقت التعطيل: ${disableDate}
+                            </div>
+                        </div>
+                        <div class="user-actions">
+                            <button class="btn btn-warning toggle-status-btn" data-user-id="${userId}" data-current-status="${isDisabled}">
+                                <i class="fas ${isDisabled ? 'fa-unlock' : 'fa-lock'}"></i> ${isDisabled ? 'تفعيل' : 'تعطيل'}
+                            </button>
+                            <button class="btn btn-edit edit-user-btn" data-user-id="${userId}">
+                                <i class="fas fa-edit"></i> تعديل
+                            </button>
+                            <button class="btn btn-info clear-device-btn" data-user-id="${userId}">
+                                <i class="fas fa-eraser"></i> تغيير الجهاز
+                            </button>
+                            <button class="btn btn-logout-force force-logout-btn" data-user-id="${userId}">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </button>
+                            <button class="btn btn-delete delete-btn" data-user-id="${userId}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    usersList.appendChild(userCard);
+                }
+                attachButtonListeners();
+            }
+
+            // دالة للتحقق من الحسابات المنتهية وتحديثها
+            async function checkAndDisableExpiredAccounts(usersData) {
+                const updates = {};
+                const now = Date.now();
+                for (const userId in usersData) {
+                    const user = usersData[userId];
+                    if (user.disableTimestamp && user.disableTimestamp < now && (user.isDisabled === false || user.isDisabled === undefined)) {
+                        updates[`users/${userId}/isDisabled`] = true;
+                    }
+                }
+
+                if (Object.keys(updates).length > 0) {
+                    try {
+                        await database.ref().update(updates);
+                    } catch (error) {
+                        console.error('Error auto-disabling accounts:', error);
+                    }
+                }
+            }
+
+            // تحميل الأعضاء من قاعدة البيانات وتخزينهم
+            function loadUsers() {
+                const usersList = document.getElementById('users-list');
+                usersList.innerHTML = '<div style="text-align: center; padding: 20px;"><p>جاري تحميل بيانات الأعضاء...</p></div>';
+
+                database.ref('users').once('value').then(async (snapshot) => {
+                    allUsersData = snapshot.val() || {};
+                    await checkAndDisableExpiredAccounts(allUsersData);
+                    database.ref('users').once('value').then((updatedSnapshot) => {
+                        allUsersData = updatedSnapshot.val() || {};
+                        displayUsers(allUsersData);
+                    });
+                }).catch(error => {
+                    usersList.innerHTML = '<div style="text-align: center; padding: 20px;"><p>حدث خطأ في تحميل الأعضاء. تأكد من تطبيق قواعد الأمان.</p></div>';
+                    console.error('Error loading users:', error);
+                    showAlert('حدث خطأ في تحميل بيانات الأعضاء', 'danger');
+                });
+            }
+
+            // دالة البحث وتصفية المستخدمين
+            function filterUsers() {
+                const searchTerm = document.getElementById('user-search').value.toLowerCase();
+                const filteredUsers = {};
+                for (const userId in allUsersData) {
+                    const user = allUsersData[userId];
+                    if ((user.email && user.email.toLowerCase().includes(searchTerm)) || (user.year && user.year.toLowerCase().includes(searchTerm))) {
+                        filteredUsers[userId] = user;
+                    }
+                }
+                displayUsers(filteredUsers);
+            }
+
+            // ... (باقي الدوال المساعدة: openEditUserModal, saveUserEdits, openClearDeviceModal, ...)
+            // ... (هي كما هي) ...
+            function openEditUserModal(e) {
+                const userId = e.currentTarget.getAttribute('data-user-id');
+                const user = allUsersData[userId];
+                if (!user) {
+                    showAlert('لا يمكن العثور على بيانات المستخدم', 'danger');
+                    return;
+                }
+                document.getElementById('edit-user-id').value = userId;
+                const disableTimestamp = user.disableTimestamp;
+                if (disableTimestamp) {
+                    const date = new Date(disableTimestamp);
+                    const localDate = date.toISOString().split('T')[0];
+                    const localTime = date.toTimeString().split(' ')[0].substring(0, 5);
+                    document.getElementById('edit-disable-date').value = localDate;
+                    document.getElementById('edit-disable-time').value = localTime;
+                } else {
+                    document.getElementById('edit-disable-date').value = '';
+                    document.getElementById('edit-disable-time').value = '';
+                }
+                document.getElementById('edit-user-modal').style.display = 'flex';
+            }
+            async function saveUserEdits() {
+                const userId = document.getElementById('edit-user-id').value;
+                const newDate = document.getElementById('edit-disable-date').value;
+                const newTime = document.getElementById('edit-disable-time').value;
+                const confirmBtn = document.getElementById('confirm-edit-btn');
+                const confirmText = document.getElementById('confirm-edit-text');
+                const confirmLoader = document.getElementById('confirm-edit-loader');
+                confirmText.style.display = 'none';
+                confirmLoader.style.display = 'inline-block';
+                confirmBtn.disabled = true;
+                let disableTimestamp = null;
+                if (newDate && newTime) {
+                    const dateTimeString = `${newDate}T${newTime}:00`;
+                    disableTimestamp = new Date(dateTimeString).getTime();
+                }
+                try {
+                    await database.ref(`users/${userId}`).update({
+                        disableTimestamp: disableTimestamp
+                    });
+                    showAlert('تم تحديث وقت التعطيل بنجاح.', 'success');
+                    closeModal('edit-user-modal');
+                    loadUsers();
+                } catch (error) {
+                    console.error('Error updating disable time:', error);
+                    showAlert('حدث خطأ أثناء تحديث وقت التعطيل.', 'danger');
+                } finally {
+                    confirmText.style.display = 'inline-block';
+                    confirmLoader.style.display = 'none';
+                    confirmBtn.disabled = false;
+                }
+            }
+            function openClearDeviceModal(e) {
+                const userId = e.currentTarget.getAttribute('data-user-id');
+                document.getElementById('clear-device-user-id').value = userId;
+                document.getElementById('clear-device-modal').style.display = 'flex';
+            }
+            function openForceLogoutModal(e) {
+                const userId = e.currentTarget.getAttribute('data-user-id');
+                document.getElementById('force-logout-user-id').value = userId;
+                document.getElementById('force-logout-modal').style.display = 'flex';
+            }
+            function openToggleStatusModal(e) {
+                const userId = e.currentTarget.getAttribute('data-user-id');
+                const currentStatus = e.currentTarget.getAttribute('data-current-status') === 'true';
+                document.getElementById('toggle-user-id').value = userId;
+                document.getElementById('current-status').value = currentStatus;
+                const title = document.getElementById('toggle-status-title');
+                const message = document.getElementById('toggle-status-message');
+                if (currentStatus) {
+                    title.textContent = 'تفعيل الحساب';
+                    message.textContent = 'هل أنت متأكد أنك تريد تفعيل هذا الحساب؟';
+                } else {
+                    title.textContent = 'تعطيل الحساب';
+                    message.textContent = 'هل أنت متأكد أنك تريد تعطيل هذا الحساب؟';
+                }
+                document.getElementById('toggle-status-modal').style.display = 'flex';
+            }
+            function openDeleteUserModal(e) {
+                const userId = e.currentTarget.getAttribute('data-user-id');
+                document.getElementById('delete-user-id').value = userId;
+                document.getElementById('delete-user-modal').style.display = 'flex';
+            }
+            async function clearDeviceId() {
+                const userId = document.getElementById('clear-device-user-id').value;
+                const confirmBtn = document.getElementById('confirm-clear-device-btn');
+                const confirmText = document.getElementById('confirm-clear-device-text');
+                const confirmLoader = document.getElementById('confirm-clear-device-loader');
+                confirmText.style.display = 'none';
+                confirmLoader.style.display = 'inline-block';
+                confirmBtn.disabled = true;
+                try {
+                    await database.ref(`users/${userId}`).update({
+                        deviceId: null
+                    });
+                    showAlert('تم مسح معرف الجهاز بنجاح. يمكن للعضو الآن تسجيل الدخول من جهاز آخر.', 'success');
+                    closeModal('clear-device-modal');
+                    loadUsers();
+                } catch (error) {
+                    console.error('Error clearing device ID:', error);
+                    showAlert('حدث خطأ أثناء مسح معرف الجهاز', 'danger');
+                } finally {
+                    confirmText.style.display = 'inline-block';
+                    confirmLoader.style.display = 'none';
+                    confirmBtn.disabled = false;
+                }
+            }
+            async function forceLogoutUser() {
+                const userId = document.getElementById('force-logout-user-id').value;
+                const confirmBtn = document.getElementById('confirm-force-logout-btn');
+                const confirmText = document.getElementById('confirm-force-logout-text');
+                const confirmLoader = document.getElementById('confirm-force-logout-loader');
+                confirmText.style.display = 'none';
+                confirmLoader.style.display = 'inline-block';
+                confirmBtn.disabled = true;
+                try {
+                    await database.ref(`users/${userId}`).update({
+                        deviceId: null, 
+                    });
+                    showAlert('تم تسجيل خروج العضو بنجاح.', 'success');
+                    closeModal('force-logout-modal');
+                    loadUsers();
+                } catch (error) {
+                    console.error('Error forcing logout:', error);
+                    showAlert('حدث خطأ أثناء تسجيل الخروج الإجباري.', 'danger');
+                } finally {
+                    confirmText.style.display = 'inline-block';
+                    confirmLoader.style.display = 'none';
+                    confirmBtn.disabled = false;
+                }
+            }
+            async function deleteUser() {
+                const userId = document.getElementById('delete-user-id').value;
+                const confirmBtn = document.getElementById('confirm-delete-btn');
+                const confirmText = document.getElementById('confirm-delete-text');
+                const confirmLoader = document.getElementById('confirm-delete-loader');
+                confirmText.style.display = 'none';
+                confirmLoader.style.display = 'inline-block';
+                confirmBtn.disabled = true;
+                try {
+                    await database.ref(`users/${userId}`).remove();
+                    showAlert('تم حذف العضو بنجاح', 'success');
+                    closeModal('delete-user-modal');
+                    loadUsers();
+                } catch (error) {
+                    console.error('Error deleting user:', error);
+                    showAlert('حدث خطأ أثناء حذف الحساب', 'danger');
+                } finally {
+                    confirmText.style.display = 'inline-block';
+                    confirmLoader.style.display = 'none';
+                    confirmBtn.disabled = false;
+                }
+            }
+            async function toggleUserStatus() {
+                const userId = document.getElementById('toggle-user-id').value;
+                const currentStatus = document.getElementById('current-status').value === 'true';
+                const newStatus = !currentStatus;
+                const confirmBtn = document.getElementById('confirm-toggle-btn');
+                const confirmText = document.getElementById('confirm-toggle-text');
+                const confirmLoader = document.getElementById('confirm-toggle-loader');
+                confirmText.style.display = 'none';
+                confirmLoader.style.display = 'inline-block';
+                confirmBtn.disabled = true;
+                try {
+                    const updates = {
+                        isDisabled: newStatus
+                    };
+                    if (!newStatus) {
+                        updates['disableTimestamp'] = null;
+                    }
+                    await database.ref(`users/${userId}`).update(updates);
+                    showAlert(`تم ${newStatus ? 'تعطيل' : 'تفعيل'} الحساب بنجاح.`, 'success');
+                    closeModal('toggle-status-modal');
+                    loadUsers(); 
+                } catch (error) {
+                    console.error('Error toggling user status:', error);
+                    showAlert(`حدث خطأ أثناء ${newStatus ? 'تعطيل' : 'تفعيل'} الحساب.`, 'danger');
+                } finally {
+                    confirmText.style.display = 'inline-block';
+                    confirmLoader.style.display = 'none';
+                    confirmBtn.disabled = false;
+                }
+            }
+            function closeModal(modalId) {
+                const modal = document.getElementById(modalId);
+                modal.style.display = 'none';
+            }
+            function attachButtonListeners() {
+                document.querySelectorAll('.edit-user-btn').forEach(button => {
+                    button.addEventListener('click', openEditUserModal);
+                });
+                document.querySelectorAll('.clear-device-btn').forEach(button => {
+                    button.addEventListener('click', openClearDeviceModal);
+                });
+                document.querySelectorAll('.force-logout-btn').forEach(button => {
+                    button.addEventListener('click', openForceLogoutModal);
+                });
+                document.querySelectorAll('.delete-btn').forEach(button => {
+                    button.addEventListener('click', openDeleteUserModal);
+                });
+                document.querySelectorAll('.toggle-status-btn').forEach(button => {
+                    button.addEventListener('click', openToggleStatusModal);
+                });
+            }
+            
+            // ربط الأحداث العامة
+            document.getElementById('logout-btn').addEventListener('click', logout);
+            document.getElementById('confirm-edit-btn').addEventListener('click', saveUserEdits);
+            document.getElementById('confirm-clear-device-btn').addEventListener('click', clearDeviceId);
+            document.getElementById('confirm-force-logout-btn').addEventListener('click', forceLogoutUser);
+            document.getElementById('confirm-delete-btn').addEventListener('click', deleteUser);
+            document.getElementById('confirm-toggle-btn').addEventListener('click', toggleUserStatus);
+            
+            document.querySelectorAll('.close-modal, .close-modal-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const modalElement = e.target.closest('.modal');
+                    if(modalElement) {
+                        closeModal(modalElement.id);
+                    }
+                });
+            });
+            
+            document.getElementById('user-search').addEventListener('input', () => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(filterUsers, 300);
+            });
+
+            // [تعديل] بدء تحميل المستخدمين
+            loadUsers();
+        
+        } // نهاية دالة initializeAppLogic
+    </script>
+</body>
+</html>

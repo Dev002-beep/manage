@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إنشاء أكواد تفعيل مجمعة</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ... (أكواد الـ CSS كما أرسلتها أنت) ... */
+:root {
+--primary-color: #06467A;
+--secondary-color: #A29BFE;
+--dark-color: #2D3436;
+--light-color: #F5F6FA;
+--success-color: #27ae60;
+}
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+font-family: 'Tajawal', sans-serif;
+}
+body {
+background-color: var(--light-color);
+color: var(--dark-color);
+display: flex;
+justify-content: center;
+align-items: center;
+min-height: 100vh;
+padding: 20px;
+}
+.container {
+width: 100%;
+max-width: 550px;
+padding: 30px;
+background-color: white;
+border-radius: 15px;
+box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+.form-title {
+font-size: 26px;
+font-weight: bold;
+margin-bottom: 24px;
+color: var(--primary-color);
+text-align: center;
+}
+.form-group {
+margin-bottom: 20px;
+text-align: right;
+}
+.form-group label {
+display: block;
+margin-bottom: 8px;
+font-weight: 700;
+}
+.form-control, .form-select {
+width: 100%;
+padding: 12px;
+border: 1px solid #ddd;
+border-radius: 8px;
+font-size: 16px;
+background-color: #fafafa;
+}
+.month-selection {
+border: 1px solid #ddd;
+padding: 15px;
+border-radius: 10px;
+margin-top: 20px;
+background-color: #f9f9f9;
+max-height: 150px;
+overflow-y: auto;
+}
+.month-item {
+display: flex;
+align-items: center;
+margin-bottom: 10px;
+padding: 5px;
+}
+.month-item input[type="checkbox"] {
+margin-left: 10px;
+width: 18px;
+height: 18px;
+accent-color: var(--primary-color);
+}
+.month-item label {
+font-weight: 500;
+cursor: pointer;
+}
+.btn {
+width: 100%;
+margin-top: 20px;
+padding: 14px;
+border: none;
+border-radius: 8px;
+background-color: var(--primary-color);
+color: white;
+font-size: 18px;
+font-weight: bold;
+cursor: pointer;
+transition: background-color 0.3s;
+display: flex;
+justify-content: center;
+align-items: center;
+gap: 10px;
+}
+.btn:disabled {
+background-color: var(--secondary-color);
+cursor: not-allowed;
+}
+.loading-spinner {
+border: 3px solid rgba(255, 255, 255, 0.3);
+border-top: 3px solid #fff;
+border-radius: 50%;
+width: 20px;
+height: 20px;
+animation: spin 1s linear infinite;
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.result-card {
+text-align: center;
+margin-top: 30px;
+padding: 20px;
+border-radius: 10px;
+background-color: #f0fdf4;
+border: 1px solid var(--success-color);
+display: none; /* Initially hidden */
+}
+.generated-codes {
+width: 100%;
+height: 150px;
+padding: 10px;
+font-size: 16px;
+font-family: monospace;
+resize: vertical;
+border: 1px solid #ddd;
+border-radius: 8px;
+margin-bottom: 10px;
+direction: ltr; /* Ensure codes are LTR */
+}
+.copy-btn {
+padding: 8px 15px;
+font-size: 14px;
+background-color: var(--secondary-color);
+color: white;
+border: none;
+border-radius: 6px;
+cursor: pointer;
+transition: background-color 0.3s;
+}
+.copy-btn:hover {
+background-color: #8a7dfd;
+}
+.alert {
+padding: 12px;
+border-radius: 8px;
+margin-top: 16px;
+font-weight: 500;
+}
+.alert-danger {
+background-color: #f8d7da;
+color: #721c24;
+}
+</style>
+</head>
+<body>
+
+<div id="page-content" style="display: none;">
+<div class="container">
+<h2 class="form-title">إنشاء أكواد تفعيل مجمعة</h2>
+<div id="alert-message"></div>
+
+<div class="form-group">
+<label for="teacher-select">1. اختر المدرس/السيرفر</label>
+<select id="teacher-select" class="form-select">
+<option value="" disabled selected>اختر مدرساً...</option>
+</select>
+</div>
+
+<div class="form-group">
+<label>2. اختر الشهور المراد تفعيلها</label>
+<div id="months-list" class="month-selection">
+<p style="color: #888;">اختر مدرساً أولاً لعرض الشهور المتاحة...</p>
+</div>
+</div>
+
+<div class="form-group">
+<label for="code-count">3. حدد عدد الأكواد</label>
+<input type="number" id="code-count" class="form-control" value="1" min="1" max="100">
+</div>
+
+<button id="generate-btn" class="btn" disabled>
+<span>إنشاء الأكواد</span>
+</button>
+
+<div id="result-card" class="result-card">
+<h4>تم إنشاء الأكواد بنجاح:</h4>
+<textarea id="generated-codes-display" class="generated-codes" readonly></textarea>
+<button id="copy-btn" class="copy-btn">نسخ جميع الأكواد</button>
+</div>
+</div>
+</div> <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script> <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+
+<script>
+// ==========================================================
+// تم وضع إعدادات Firebase الخاصة بك هنا
+// ==========================================================
+const firebaseConfig = {
+apiKey: 'AIzaSyCdqYrVFspJ4rZwidfaPtc9PYpNlQQm09k',
+appId: '1:284879336757:web:1f42836c2382d11b73087c',
+messagingSenderId: '284879336757',
+projectId: 'amgg-81ac3',
+authDomain: 'amgg-81ac3.firebaseapp.com',
+databaseURL: 'https://amgg-81ac3-default-rtdb.firebaseio.com',
+storageBucket: 'amgg-81ac3.firebasestorage.app',
+measurementId: 'G-FMZW8S6WES',
+};
+
+// Initialize Firebase
+if (!firebase.apps.length) {
+firebase.initializeApp(firebaseConfig);
+}
+
+// ==========================================================
+// ========== حارس الأمان (Admin Guard) ==========
+// ==========================================================
+const auth = firebase.auth();
+const database = firebase.database();
+
+auth.onAuthStateChanged(user => {
+if (user) {
+database.ref(`admins/${user.uid}`).once('value', snapshot => {
+if (snapshot.exists()) {
+console.log('Admin access granted.');
+document.getElementById('page-content').style.display = 'block';
+initializeAppLogic(); // [تعديل] بدء تشغيل الكود
+} else {
+alert('ليس لديك صلاحيات الوصول لهذه الصفحة.');
+auth.signOut();
+window.location.href = 'index.html';
+}
+});
+} else {
+console.log('User not logged in. Redirecting...');
+window.location.href = 'index.html';
+}
+});
+// ==========================================================
+// ========== نهاية حارس الأمان ==========
+// ==========================================================
+
+
+// [تعديل] تغليف كل الكود الأصلي
+function initializeAppLogic() {
+
+const codesRef = database.ref('codes');
+const monthsRef = database.ref('months');
+
+// DOM Elements
+const teacherSelect = document.getElementById('teacher-select');
+const monthsListDiv = document.getElementById('months-list');
+const codeCountInput = document.getElementById('code-count');
+const generateBtn = document.getElementById('generate-btn');
+const resultCard = document.getElementById('result-card');
+const codeDisplay = document.getElementById('generated-codes-display');
+const copyBtn = document.getElementById('copy-btn');
+const alertMessageDiv = document.getElementById('alert-message');
+
+// Populate teacher dropdown menu
+for (let i = 1; i <= 25; i++) {
+const option = document.createElement('option');
+const teacherName = `مدرس ${i}`;
+option.value = teacherName;
+option.textContent = teacherName;
+teacherSelect.appendChild(option);
+}
+
+function showAlert(message, type = 'danger') {
+alertMessageDiv.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+setTimeout(() => { alertMessageDiv.innerHTML = ''; }, 4000);
+}
+
+async function fetchMonths() {
+const selectedTeacher = teacherSelect.value;
+if (!selectedTeacher) return;
+
+monthsListDiv.innerHTML = '<p>جاري تحميل الشهور...</p>';
+generateBtn.disabled = true;
+
+try {
+const snapshot = await monthsRef.child(selectedTeacher).once('value');
+const monthsData = snapshot.val();
+
+monthsListDiv.innerHTML = '';
+
+if (snapshot.exists()) {
+const monthsArray = Object.entries(monthsData).map(([key, value]) => ({ id: key, ...value }));
+monthsArray.sort((a, b) => (a.order || 999) - (b.order || 999));
+
+monthsArray.forEach(month => {
+const monthDiv = document.createElement('div');
+monthDiv.className = 'month-item';
+monthDiv.innerHTML = `
+<input type="checkbox" id="month-${month.id}" data-month-id="${month.id}">
+<label for="month-${month.id}">${month.name || 'شهر غير مسمى'}</label>
+`;
+monthsListDiv.appendChild(monthDiv);
+});
+generateBtn.disabled = false;
+} else {
+monthsListDiv.innerHTML = '<p style="color: #888;">لا توجد شهور مُضافة لهذا المدرس.</p>';
+}
+} catch (error) {
+console.error("Error fetching months:", error);
+monthsListDiv.innerHTML = '<p style="color: red;">خطأ في تحميل الشهور.</p>';
+}
+}
+
+// ==========================================================
+// ========== [تعديل] تم تغيير هذه الدالة ==========
+// ==========================================================
+function generateRandomCode() {
+// [تعديل] إنشاء كود من 11 رقم
+const chars = '0123456789'; // أرقام فقط
+let code = '';
+for (let i = 0; i < 11; i++) { // [تعديل] تم تغيير الطول إلى 11
+code += chars.charAt(Math.floor(Math.random() * chars.length));
+}
+return code;
+}
+// ==========================================================
+// ==========================================================
+
+
+async function generateAndSaveCodes() {
+generateBtn.disabled = true;
+generateBtn.innerHTML = '<span class="loading-spinner"></span><span>جاري الإنشاء...</span>';
+resultCard.style.display = 'none';
+alertMessageDiv.innerHTML = '';
+
+const selectedServer = teacherSelect.value;
+const selectedMonthCheckboxes = monthsListDiv.querySelectorAll('input[type="checkbox"]:checked');
+const selectedMonthIds = Array.from(selectedMonthCheckboxes).map(cb => cb.dataset.monthId);
+const codeCount = parseInt(codeCountInput.value) || 1;
+
+if (!selectedServer || selectedMonthIds.length === 0) {
+showAlert('الرجاء اختيار مدرس وشهر واحد على الأقل.');
+generateBtn.disabled = false;
+generateBtn.innerHTML = '<span>إنشاء الأكواد</span>';
+return;
+}
+
+try {
+const updates = {};
+const generatedCodes = [];
+
+for (let i = 0; i < codeCount; i++) {
+let newCode;
+let isCodeUnique = false;
+do {
+newCode = generateRandomCode();
+const snapshot = await codesRef.child(newCode).get();
+if (!snapshot.exists()) {
+isCodeUnique = true;
+}
+} while (!isCodeUnique);
+
+updates[newCode] = {
+server: selectedServer,
+isUsed: false,
+months: selectedMonthIds
+};
+generatedCodes.push(newCode);
+}
+
+// Save all codes in one batch
+await codesRef.update(updates);
+
+codeDisplay.value = generatedCodes.join('\n');
+resultCard.style.display = 'block';
+selectedMonthCheckboxes.forEach(cb => cb.checked = false);
+
+} catch (error) {
+console.error("Error generating codes:", error);
+showAlert('حدث خطأ أثناء إنشاء الأكواد. تأكد من اتصالك بالإنترنت.');
+} finally {
+generateBtn.disabled = false;
+generateBtn.innerHTML = '<span>إنشاء الأكواد</span>';
+}
+}
+
+// Event Listeners
+teacherSelect.addEventListener('change', fetchMonths);
+generateBtn.addEventListener('click', generateAndSaveCodes);
+
+copyBtn.addEventListener('click', () => {
+codeDisplay.select();
+document.execCommand('copy');
+copyBtn.textContent = 'تم النسخ!';
+setTimeout(() => { copyBtn.textContent = 'نسخ جميع الأكواد'; }, 2000);
+});
+
+} // [تعديل] إغلاق دالة initializeAppLogic
+</script>
+</body>
+</html>

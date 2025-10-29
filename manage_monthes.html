@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إدارة صلاحيات الطلاب وإضافة الشهور</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ... (نفس أكواد الـ CSS الخاصة بك) ... */
+:root {
+--primary-color: #6C5CE7;
+--secondary-color: #A29BFE;
+--dark-color: #2D3436;
+--light-color: #F5F6FA;
+--accent-color: #00CE9F;
+--danger-color: #E74C3C;
+}
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+font-family: 'Tajawal', sans-serif;
+}
+body {
+background-color: var(--light-color);
+color: var(--dark-color);
+padding: 30px;
+}
+.header {
+text-align: center;
+margin-bottom: 30px;
+color: var(--primary-color);
+font-size: 28px;
+}
+.add-month-panel {
+background-color: white;
+padding: 20px;
+border-radius: 10px;
+box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+margin-bottom: 30px;
+}
+.add-month-panel h3 {
+color: var(--primary-color);
+border-bottom: 2px solid var(--secondary-color);
+padding-bottom: 10px;
+margin-bottom: 20px;
+font-size: 20px;
+}
+.month-form-controls {
+display: flex;
+gap: 15px;
+align-items: flex-end;
+}
+.month-form-controls > div {
+flex-grow: 1;
+}
+.month-form-controls label {
+font-weight: 500;
+display: block;
+margin-bottom: 5px;
+}
+.form-control, .form-select {
+width: 100%;
+padding: 10px;
+border: 1px solid #ddd;
+border-radius: 8px;
+font-size: 16px;
+}
+#add-month-btn {
+background-color: var(--accent-color);
+color: white;
+font-size: 16px;
+padding: 10px 20px;
+border: none;
+border-radius: 8px;
+cursor: pointer;
+transition: background-color 0.3s;
+}
+#add-month-btn:hover:not(:disabled) {
+background-color: #00b38c;
+}
+#add-month-btn:disabled {
+background-color: #ccc;
+cursor: not-allowed;
+}
+.main-container {
+display: flex;
+gap: 20px;
+max-width: 1200px;
+margin: 0 auto;
+}
+.student-list-panel {
+flex: 1;
+background-color: white;
+padding: 20px;
+border-radius: 10px;
+box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+min-width: 300px;
+max-height: 80vh;
+overflow-y: hidden; 
+}
+.filter-controls {
+margin-bottom: 15px;
+padding-bottom: 10px;
+border-bottom: 1px solid #eee;
+display: flex;
+flex-direction: column;
+gap: 10px;
+}
+.filter-controls label {
+font-weight: 500;
+display: block;
+margin-bottom: 5px;
+}
+#student-list-container {
+max-height: calc(80vh - 180px);
+overflow-y: auto;
+}
+.student-item {
+padding: 15px;
+border-bottom: 1px solid #eee;
+cursor: pointer;
+transition: background-color 0.2s, border-right 0.2s;
+display: flex;
+justify-content: space-between;
+align-items: center;
+}
+.student-item:hover {
+background-color: #f7f7f7;
+}
+.student-item.active {
+background-color: var(--secondary-color);
+color: white;
+border-right: 5px solid var(--primary-color);
+}
+.student-info {
+font-weight: 500;
+}
+.student-year {
+font-size: 12px;
+color: #777;
+}
+.student-item.active .student-year {
+color: white;
+}
+.month-management-panel {
+flex: 2;
+background-color: white;
+padding: 20px;
+border-radius: 10px;
+box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.panel-title {
+font-size: 20px;
+font-weight: 700;
+color: var(--dark-color);
+margin-bottom: 15px;
+border-bottom: 2px solid var(--primary-color);
+padding-bottom: 5px;
+}
+#month-controls {
+max-height: 60vh;
+overflow-y: auto;
+padding: 10px 0;
+}
+.month-item {
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 12px 0;
+border-bottom: 1px dashed #eee;
+gap: 15px; 
+}
+.month-item label {
+font-weight: 500;
+color: var(--dark-color);
+cursor: pointer;
+flex-grow: 1;
+}
+.month-item-controls {
+display: flex;
+align-items: center;
+gap: 15px; 
+}
+.duration-control {
+display: flex;
+align-items: center;
+gap: 5px;
+}
+.duration-input {
+width: 70px; 
+padding: 6px;
+text-align: center;
+border: 1px solid #ccc;
+border-radius: 5px;
+font-size: 16px;
+}
+.duration-control span {
+font-size: 14px;
+white-space: nowrap;
+}
+.status-text {
+font-size: 14px;
+font-weight: 500;
+color: #155724; 
+white-space: nowrap;
+}
+.status-text.expired {
+color: var(--danger-color);
+}
+.month-item input[type="checkbox"] {
+margin: 0;
+width: 20px;
+height: 20px;
+accent-color: var(--primary-color);
+}
+#save-changes-btn {
+width: 100%;
+padding: 12px;
+border: none;
+border-radius: 8px;
+background-color: var(--accent-color);
+color: white;
+font-size: 18px;
+font-weight: bold;
+cursor: pointer;
+transition: background-color 0.3s;
+margin-top: 20px;
+}
+#save-changes-btn:hover:not(:disabled) {
+background-color: #00b38c;
+}
+#save-changes-btn:disabled {
+background-color: #ccc;
+cursor: not-allowed;
+}
+.alert {
+padding: 10px;
+border-radius: 8px;
+margin-bottom: 15px;
+font-weight: 500;
+text-align: center;
+}
+.alert-success {
+background-color: #d4edda;
+color: #155724;
+}
+.alert-danger {
+background-color: #f8d7da;
+color: #721c24;
+}
+.loading-spinner {
+border: 4px solid rgba(0, 0, 0, 0.1);
+border-top: 4px solid var(--primary-color);
+border-radius: 50%;
+width: 24px;
+height: 24px;
+animation: spin 1s linear infinite;
+display: inline-block;
+}
+@keyframes spin {
+0% { transform: rotate(0deg); }
+100% { transform: rotate(360deg); }
+}
+.empty-state {
+text-align: center;
+color: #999;
+padding: 50px 0;
+}
+</style>
+</head>
+<body>
+
+<!-- [تعديل] إضافة حاوية رئيسية مخفية -->
+<div id="page-content" style="display: none;">
+
+    <h2 class="header">لوحة تحكم المسؤول</h2>
+    <div id="alert-message"></div>
+
+    <div class="add-month-panel">
+        <h3>إضافة شهر/وحدة جديدة</h3>
+        <div class="month-form-controls">
+            <div>
+                <label for="new-month-year">السنة الدراسية</label>
+                <select id="new-month-year" class="form-select">
+                    <option value="" disabled selected>اختر السنة</option>
+                    <!-- Populated by JS -->
+                </select>
+            </div>
+            <div>
+                <label for="new-month-name">اسم الشهر/الوحدة</label>
+                <input type="text" id="new-month-name" class="form-control" placeholder="مثال: الوحدة الأولى - التأسيس">
+            </div>
+            <div>
+                <label for="new-month-order">ترتيب الظهور</label>
+                <input type="number" id="new-month-order" class="form-control" value="1">
+            </div>
+            <button id="add-month-btn">إضافة الشهر</button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="student-list-panel">
+            <div class="panel-title">قائمة الطلاب</div>
+            <div class="filter-controls">
+                <div>
+                    <label for="year-filter">فلترة حسب السنة:</label>
+                    <select id="year-filter" class="form-select">
+                        <option value="all">جميع السنوات</option>
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+                <div>
+                    <label for="search-input">البحث بالاسم/الإيميل:</label>
+                    <input type="text" id="search-input" class="form-control" placeholder="اكتب جزء من الاسم أو الإيميل..." dir="auto">
+                </div>
+            </div>
+            <div id="student-list-container">
+                <div id="student-list">
+                    <div class="empty-state">
+                        <div class="loading-spinner"></div>
+                        <p>جاري تحميل بيانات الطلاب...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="month-management-panel">
+            <div id="management-content">
+                <div class="empty-state">
+                    <p>الرجاء اختيار طالب من القائمة لعرض الشهور المتاحة وتعديل التفعيل.</p>
+                </div>
+            </div>
+            <button id="save-changes-btn" disabled>حفظ التغييرات</button>
+        </div>
+    </div>
+
+</div> <!-- [تعديل] إغلاق الحاوية الرئيسية -->
+
+<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script> <!-- [تعديل] إضافة Auth -->
+<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+
+<script>
+// ==========================================================
+// ========== تهيئة وإعداد Firebase والثوابت ==========
+// ==========================================================
+const firebaseConfig = {
+    apiKey: 'AIzaSyCdqYrVFspJ4rZwidfaPtc9PYpNlQQm09k',
+    appId: '1:284879336757:web:1f42836c2382d11b73087c',
+    messagingSenderId: '284879336757',
+    projectId: 'amgg-81ac3',
+    authDomain: 'amgg-81ac3.firebaseapp.com',
+    databaseURL: 'https://amgg-81ac3-default-rtdb.firebaseio.com',
+    storageBucket: 'amgg-81ac3.firebasestorage.app',
+    measurementId: 'G-FMZW8S6WES',
+};
+
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+
+// ==========================================================
+// ========== حارس الأمان (Admin Guard) ==========
+// ==========================================================
+const auth = firebase.auth();
+const database = firebase.database();
+
+auth.onAuthStateChanged(user => {
+    if (user) {
+        database.ref(`admins/${user.uid}`).once('value', snapshot => {
+            if (snapshot.exists()) {
+                console.log('Admin access granted.');
+                document.getElementById('page-content').style.display = 'block';
+                initializeAppLogic(); // [تعديل] بدء تشغيل الكود
+            } else {
+                alert('ليس لديك صلاحيات الوصول لهذه الصفحة.');
+                auth.signOut();
+                window.location.href = 'index.html';
+            }
+        });
+    } else {
+        console.log('User not logged in. Redirecting...');
+        window.location.href = 'index.html';
+    }
+});
+// ==========================================================
+// ========== نهاية حارس الأمان ==========
+// ==========================================================
+
+
+// [تعديل] تغليف كل الكود الأصلي
+function initializeAppLogic() {
+
+    const usersRef = database.ref('users');
+    const monthsRef = database.ref('months');
+    const studentAccessRef = database.ref('student_month_access');
+
+    const studentListDiv = document.getElementById('student-list');
+    const managementContentDiv = document.getElementById('management-content');
+    const saveChangesBtn = document.getElementById('save-changes-btn');
+    const alertMessageDiv = document.getElementById('alert-message');
+    const yearFilterSelect = document.getElementById('year-filter');
+    const searchInput = document.getElementById('search-input'); 
+
+    const newMonthYearSelect = document.getElementById('new-month-year');
+    const newMonthNameInput = document.getElementById('new-month-name');
+    const newMonthOrderInput = document.getElementById('new-month-order');
+    const addMonthBtn = document.getElementById('add-month-btn');
+
+    let allStudents = [];
+    let allMonthsData = {};
+    let selectedStudentId = null;
+    let selectedStudentData = null;
+
+    // **التعديل**: تعبئة القوائم المنسدلة بالأسماء العربية
+    for (let i = 1; i <= 25; i++) {
+        const teacherName = `مدرس ${i}`;
+        
+        const option1 = document.createElement('option');
+        option1.value = teacherName;
+        option1.textContent = teacherName;
+        newMonthYearSelect.appendChild(option1);
+
+        const option2 = document.createElement('option');
+        option2.value = teacherName;
+        option2.textContent = teacherName;
+        yearFilterSelect.appendChild(option2);
+    }
+
+
+    function showAlert(message, type = 'success') {
+        alertMessageDiv.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+        setTimeout(() => {
+            alertMessageDiv.innerHTML = '';
+        }, 5000);
+    }
+
+    // ==========================================================
+    // ========== وظائف إدارة الشهور (الإضافة) ==========
+    // ==========================================================
+    async function addMonth() {
+        const yearName = newMonthYearSelect.value;
+        const monthName = newMonthNameInput.value.trim();
+        const order = parseInt(newMonthOrderInput.value) || 999;
+
+        if (!yearName || !monthName) {
+            showAlert('الرجاء اختيار السنة وإدخال اسم الشهر.', 'danger');
+            return;
+        }
+
+        addMonthBtn.disabled = true;
+        addMonthBtn.innerHTML = '<span class="loading-spinner" style="width: 16px; height: 16px;"></span>';
+
+        try {
+            const newMonthRef = monthsRef.child(yearName).push();
+            await newMonthRef.set({
+                name: monthName,
+                order: order,
+                createdAt: firebase.database.ServerValue.TIMESTAMP
+            });
+
+            showAlert(`✅ تم إضافة الشهر: "${monthName}" لسنة ${yearName} بنجاح.`, 'success');
+            
+            await fetchAllMonths();
+            newMonthNameInput.value = '';
+            newMonthOrderInput.value = (parseInt(newMonthOrderInput.value) + 1).toString();
+
+        } catch (error) {
+            console.error("Error adding month:", error);
+            showAlert(`🚫 فشل إضافة الشهر: ${error.message}`, 'danger');
+        } finally {
+            addMonthBtn.disabled = false;
+            addMonthBtn.innerHTML = 'إضافة الشهر';
+        }
+    }
+    addMonthBtn.addEventListener('click', addMonth);
+
+    // ==========================================================
+    // ========== وظائف جلب وعرض بيانات الطلاب والشهور ==========
+    // ==========================================================
+    async function fetchAllMonths() {
+        try {
+            const snapshot = await monthsRef.once('value');
+            allMonthsData = snapshot.val() || {};
+        } catch (error) {
+            console.error("Error fetching all months:", error);
+        }
+    }
+
+    async function fetchStudents() {
+        studentListDiv.innerHTML = `<div class="empty-state"><div class="loading-spinner"></div><p>جاري تحميل بيانات الطلاب...</p></div>`;
+        await fetchAllMonths(); 
+
+        try {
+            const snapshot = await usersRef.once('value');
+            const studentsData = snapshot.val();
+            allStudents = [];
+
+            if (studentsData) {
+                Object.entries(studentsData).forEach(([uid, data]) => {
+                    allStudents.push({ 
+                        uid, 
+                        email: data.email || 'غير معروف',
+                        yearName: data.year || 'غير محدد', 
+                        ...data 
+                    });
+                });
+                allStudents.sort((a, b) => (a.fullName || a.email).localeCompare(b.fullName || b.email));
+            }
+            renderStudentList();
+        } catch (error) {
+            console.error("Error fetching students:", error);
+            studentListDiv.innerHTML = `<div class="empty-state"><p style="color: var(--danger-color);">فشل تحميل قائمة الطلاب.</p></div>`;
+        }
+    }
+
+    function renderStudentList() {
+        const currentYearFilter = yearFilterSelect.value;
+        const currentSearchTerm = searchInput.value.trim().toLowerCase();
+
+        const filteredStudents = allStudents.filter(student => {
+            const yearMatch = (currentYearFilter === 'all') || (student.yearName === currentYearFilter);
+            const searchMatch = !currentSearchTerm || 
+                                (student.fullName || '').toLowerCase().includes(currentSearchTerm) ||
+                                student.email.toLowerCase().includes(currentSearchTerm);
+            return yearMatch && searchMatch;
+        });
+
+        if (filteredStudents.length === 0) {
+            studentListDiv.innerHTML = `<div class="empty-state"><p>لا يوجد طلاب يطابقون معايير البحث.</p></div>`;
+            return;
+        }
+
+        studentListDiv.innerHTML = filteredStudents.map(student => `
+        <div class="student-item" data-uid="${student.uid}">
+            <span class="student-info">${student.fullName || student.email.split('@')[0]}</span>
+            <span class="student-year">${student.yearName}</span>
+        </div>
+        `).join('');
+
+        document.querySelectorAll('.student-item').forEach(item => {
+            item.addEventListener('click', () => selectStudent(item.dataset.uid));
+        });
+
+        if (selectedStudentId) {
+            const activeItem = document.querySelector(`.student-item[data-uid="${selectedStudentId}"]`);
+            if (activeItem) activeItem.classList.add('active');
+        }
+    }
+
+    yearFilterSelect.addEventListener('change', renderStudentList);
+    searchInput.addEventListener('input', renderStudentList);
+
+    function calculateRemainingDays(timestamp) {
+        if (!timestamp || typeof timestamp !== 'number') {
+            return { status: 'غير مفعل', days: 0, isExpired: true };
+        }
+        const msInDay = 24 * 60 * 60 * 1000;
+        const remainingMs = timestamp - Date.now();
+        if (remainingMs <= 0) {
+            return { status: 'منتهي الصلاحية', days: 0, isExpired: true };
+        }
+        const remainingDays = Math.ceil(remainingMs / msInDay);
+        return { status: `متبقي: ${remainingDays} يوم`, days: remainingDays, isExpired: false };
+    }
+
+    async function selectStudent(uid) {
+        document.querySelectorAll('.student-item').forEach(item => item.classList.remove('active'));
+        const selectedItem = document.querySelector(`.student-item[data-uid="${uid}"]`);
+        if (selectedItem) selectedItem.classList.add('active');
+
+        selectedStudentId = uid;
+        selectedStudentData = allStudents.find(s => s.uid === uid);
+
+        managementContentDiv.innerHTML = `<div class="empty-state"><div class="loading-spinner"></div><p>جاري جلب حالة تفعيل الشهور...</p></div>`;
+        saveChangesBtn.disabled = true;
+
+        if (!selectedStudentData) return;
+
+        const accessSnapshot = await studentAccessRef.child(uid).once('value');
+        const studentAccess = accessSnapshot.val() || {}; 
+        const yearName = selectedStudentData.yearName;
+
+        if (!yearName || yearName === 'غير محدد') {
+            managementContentDiv.innerHTML = `<div class="empty-state"><p style="color: var(--danger-color);">لم يتم تحديد سنة دراسية للطالب.</p></div>`;
+            return;
+        }
+        
+        const availableMonths = allMonthsData[yearName];
+
+        if (!availableMonths || Object.keys(availableMonths).length === 0) {
+            managementContentDiv.innerHTML = `<div class="empty-state"><p>لا توجد شهور مُضافة لسنة "${yearName}".</p></div>`;
+            return;
+        }
+
+        const studentDisplayInfo = selectedStudentData.fullName || selectedStudentData.email.split('@')[0];
+        let monthHtml = `<div class="panel-title">تفعيل الشهور لـ: ${studentDisplayInfo}</div><div id="month-controls">`;
+
+        let monthsArray = Object.entries(availableMonths).map(([key, value]) => ({ id: key, ...value }));
+        monthsArray.sort((a, b) => (a.order || 999) - (b.order || 999));
+
+        monthsArray.forEach(month => {
+            const expiryTimestamp = studentAccess[month.id];
+            const { status, days, isExpired } = calculateRemainingDays(expiryTimestamp);
+            const isChecked = !isExpired && days > 0;
+            let statusClass = isExpired ? 'expired' : '';
+
+            monthHtml += `
+            <div class="month-item" data-month-id="${month.id}">
+                <label for="ctrl-${month.id}">${month.name || 'شهر غير مسمى'}</label>
+                <div class="month-item-controls">
+                    <span class="status-text ${statusClass}">${status}</span>
+                    <div class="duration-control">
+                        <input type="number" id="days-${month.id}" class="duration-input" value="${isChecked ? days : 30}" min="1">
+                        <span>يوم</span>
+                    </div>
+                    <input type="checkbox" id="ctrl-${month.id}" data-month-id="${month.id}" ${isChecked ? 'checked' : ''}>
+                </div>
+            </div>
+            `;
+        });
+
+        monthHtml += `</div>`;
+        managementContentDiv.innerHTML = monthHtml;
+        saveChangesBtn.disabled = false;
+    }
+
+    // ==========================================================
+    // ========== وظيفة حفظ التغييرات ==========
+    // ==========================================================
+    async function saveChanges() {
+        if (!selectedStudentId) {
+            showAlert('الرجاء اختيار طالب أولاً.', 'danger');
+            return;
+        }
+
+        saveChangesBtn.disabled = true;
+        saveChangesBtn.innerHTML = '<span class="loading-spinner" style="width: 16px; height: 16px;"></span> جاري الحفظ...';
+
+        try {
+            const updates = {};
+            const monthItems = document.querySelectorAll('#month-controls .month-item');
+
+            monthItems.forEach(item => {
+                const monthId = item.dataset.monthId;
+                const checkbox = item.querySelector(`input[type="checkbox"]`);
+                const daysInput = item.querySelector(`.duration-input`);
+
+                if (checkbox.checked) {
+                    const days = parseInt(daysInput.value) || 30;
+                    const msInDay = 24 * 60 * 60 * 1000;
+                    const expiryTimestamp = Date.now() + (days * msInDay);
+                    updates[monthId] = expiryTimestamp; 
+                } else {
+                    updates[monthId] = null; 
+                }
+            });
+
+            await studentAccessRef.child(selectedStudentId).update(updates);
+            showAlert('✅ تم حفظ التغييرات بنجاح.', 'success');
+            await selectStudent(selectedStudentId);
+
+        } catch (error) {
+            console.error("Error saving changes:", error);
+            showAlert(`🚫 فشل الحفظ: ${error.message}`, 'danger');
+        } finally {
+            saveChangesBtn.disabled = false;
+            saveChangesBtn.innerHTML = 'حفظ التغييرات';
+        }
+    }
+    saveChangesBtn.addEventListener('click', saveChanges);
+
+    // [تعديل] بدء تحميل الطلاب
+    fetchStudents();
+}
+</script>
+</body>
+</html>

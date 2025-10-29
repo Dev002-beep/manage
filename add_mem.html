@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إنشاء أكواد تفعيل مجمعة</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* --- Variables --- */
+:root {
+  --primary-color: #06467A; /* لون أزرق داكن */
+  --secondary-color: #A29BFE; /* لون بنفسجي فاتح */
+  --accent-color: #81ecec; /* لون سماوي فاتح (بديل للثانوي) */
+  --dark-color: #2D3436; /* لون نص داكن */
+  --light-color: #F5F6FA; /* لون خلفية فاتح */
+  --gray-light: #dfe6e9; /* لون رمادي فاتح */
+  --gray-medium: #b2bec3; /* لون رمادي متوسط */
+  --success-color: #00b894; /* لون أخضر للنجاح */
+  --danger-color: #d63031; /* لون أحمر للخطر */
+  --white-color: #ffffff;
+  --border-radius-sm: 6px;
+  --border-radius-md: 10px;
+  --border-radius-lg: 15px;
+  --box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+/* --- Base Styles --- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Tajawal', sans-serif;
+}
+
+body {
+  background-color: var(--light-color);
+  color: var(--dark-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  line-height: 1.6;
+}
+
+/* --- Page Content Wrapper --- */
+#page-content {
+  display: none; /* Hidden by default, shown by JS */
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* --- Main Container --- */
+.container {
+  width: 100%;
+  max-width: 550px;
+  padding: 35px;
+  background-color: var(--white-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--box-shadow);
+  overflow: hidden; /* Prevent content overflow */
+}
+
+/* --- Titles --- */
+.form-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 30px;
+  color: var(--primary-color);
+  text-align: center;
+}
+
+/* --- Form Elements --- */
+.form-group {
+  margin-bottom: 25px;
+  text-align: right;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--dark-color);
+}
+
+.form-control, .form-select {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid var(--gray-light);
+  border-radius: var(--border-radius-sm);
+  font-size: 16px;
+  background-color: var(--white-color);
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.form-control:focus, .form-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(6, 70, 122, 0.1);
+}
+
+.form-select {
+  appearance: none; /* Remove default arrow */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 0.75rem center;
+  background-size: 16px 12px;
+  padding-left: 2.5rem; /* Space for custom arrow */
+}
+
+/* --- Month Selection --- */
+.month-selection {
+  border: 1px solid var(--gray-light);
+  padding: 15px;
+  border-radius: var(--border-radius-md);
+  margin-top: 10px; /* Reduced margin */
+  background-color: var(--light-color);
+  max-height: 180px; /* Increased height slightly */
+  overflow-y: auto;
+}
+
+.month-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 8px 5px;
+  border-radius: var(--border-radius-sm);
+  transition: background-color 0.2s ease;
+}
+.month-item:last-child {
+    margin-bottom: 0;
+}
+.month-item:hover {
+    background-color: var(--gray-light);
+}
+
+.month-item input[type="checkbox"] {
+  margin-left: 12px;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary-color);
+  cursor: pointer;
+  flex-shrink: 0; /* Prevent checkbox shrinking */
+}
+
+.month-item label {
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 0; /* Override form-group label margin */
+  flex-grow: 1; /* Allow label to take available space */
+}
+
+/* --- Buttons --- */
+.btn {
+  width: 100%;
+  margin-top: 25px;
+  padding: 14px;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  background-color: var(--primary-color);
+  color: var(--white-color);
+  font-size: 18px;
+  font-weight: 700; /* Bolder text */
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn:hover:not(:disabled) {
+  background-color: #043a63; /* Darker shade on hover */
+  transform: translateY(-2px);
+}
+
+.btn:active:not(:disabled) {
+    transform: translateY(0px); /* Click effect */
+}
+
+.btn:disabled {
+  background-color: var(--gray-medium);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.copy-btn {
+  padding: 10px 18px; /* Slightly larger */
+  font-size: 15px;
+  font-weight: 600;
+  background-color: var(--success-color); /* Success color */
+  color: var(--white-color);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+}
+
+.copy-btn:hover {
+  background-color: #00a075; /* Darker green */
+  transform: translateY(-2px);
+}
+.copy-btn:active {
+    transform: translateY(0px);
+}
+
+/* --- Loading Spinner --- */
+.loading-spinner {
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid var(--white-color);
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 0.8s linear infinite; /* Faster spin */
+}
+
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* --- Result Card --- */
+.result-card {
+  text-align: center;
+  margin-top: 35px;
+  padding: 25px;
+  border-radius: var(--border-radius-md);
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0; /* Lighter border */
+  display: none; /* Initially hidden */
+}
+.result-card h4 {
+    margin-bottom: 15px;
+    font-size: 18px;
+    color: #166534; /* Darker green for title */
+}
+
+.generated-codes {
+  width: 100%;
+  height: 160px; /* Increased height */
+  padding: 12px;
+  font-size: 16px;
+  font-family: 'Courier New', Courier, monospace; /* Monospace font */
+  resize: vertical;
+  border: 1px solid var(--gray-light);
+  border-radius: var(--border-radius-sm);
+  margin-bottom: 15px;
+  direction: ltr; /* Ensure codes are LTR */
+  background-color: var(--white-color);
+  line-height: 1.5;
+  white-space: pre; /* Preserve line breaks */
+}
+
+/* --- Alerts --- */
+.alert {
+  padding: 15px;
+  border-radius: var(--border-radius-sm);
+  margin-bottom: 20px; /* Space below alert */
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+.alert-danger {
+  background-color: #fef2f2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+.alert-success { /* Added success alert style */
+    background-color: #f0fdf4;
+    color: #166534;
+    border-color: #bbf7d0;
+}
+
+/* --- Placeholder Text --- */
+::placeholder {
+    color: var(--gray-medium);
+    opacity: 1;
+}
+</style>
+</head>
+<body>
+
+<!-- [تعديل] تم تغليف الواجهة الرئيسية ليتم إخفاؤها -->
+<div id="page-content">
+    <div class="container">
+        <h2 class="form-title">إنشاء أكواد تفعيل مجمعة</h2>
+        <div id="alert-message"></div>
+
+        <div class="form-group">
+            <label for="teacher-select">1. اختر المدرس/السيرفر</label>
+            <select id="teacher-select" class="form-select">
+                <option value="" disabled selected>-- اختر --</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>2. اختر الشهور المراد تفعيلها</label>
+            <div id="months-list" class="month-selection">
+                <p style="color: #666; text-align: center;">اختر مدرساً أولاً لعرض الشهور.</p>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="code-count">3. حدد عدد الأكواد (1-100)</label>
+            <input type="number" id="code-count" class="form-control" value="1" min="1" max="100">
+        </div>
+
+        <button id="generate-btn" class="btn" disabled>
+            <span>إنشاء الأكواد</span>
+        </button>
+
+        <div id="result-card" class="result-card">
+            <h4>تم إنشاء الأكواد بنجاح:</h4>
+            <textarea id="generated-codes-display" class="generated-codes" readonly></textarea>
+            <button id="copy-btn" class="copy-btn">نسخ جميع الأكواد</button>
+        </div>
+    </div>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+<!-- [تعديل] إضافة Auth SDK للتحقق من هوية الأدمن -->
+<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+
+
+<script>
+// ==========================================================
+// Firebase Config
+// ==========================================================
+const firebaseConfig = {
+    apiKey: 'AIzaSyCdqYrVFspJ4rZwidfaPtc9PYpNlQQm09k',
+    appId: '1:284879336757:web:1f42836c2382d11b73087c',
+    messagingSenderId: '284879336757',
+    projectId: 'amgg-81ac3',
+    authDomain: 'amgg-81ac3.firebaseapp.com',
+    databaseURL: 'https://amgg-81ac3-default-rtdb.firebaseio.com',
+    storageBucket: 'amgg-81ac3.firebasestorage.app',
+    measurementId: 'G-FMZW8S6WES',
+};
+
+// Initialize Firebase
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+
+// ==========================================================
+// Admin Guard
+// ==========================================================
+const auth = firebase.auth();
+const database = firebase.database();
+
+auth.onAuthStateChanged(user => {
+    if (user) {
+        database.ref(`admins/${user.uid}`).once('value', snapshot => {
+            if (snapshot.exists()) {
+                console.log('Admin access granted.');
+                document.getElementById('page-content').style.display = 'flex';
+                initializeAppLogic();
+            } else {
+                alert('ليس لديك صلاحيات الوصول لهذه الصفحة.');
+                auth.signOut();
+                window.location.href = 'index.html';
+            }
+        });
+    } else {
+        console.log('User not logged in. Redirecting...');
+        window.location.href = 'index.html';
+    }
+});
+// ==========================================================
+// End Admin Guard
+// ==========================================================
+
+
+// ==========================================================
+// Main App Logic
+// ==========================================================
+function initializeAppLogic() {
+
+    const codesRef = database.ref('codes');
+    const monthsRef = database.ref('months');
+
+    // DOM Elements
+    const teacherSelect = document.getElementById('teacher-select');
+    const monthsListDiv = document.getElementById('months-list');
+    const codeCountInput = document.getElementById('code-count');
+    const generateBtn = document.getElementById('generate-btn');
+    const resultCard = document.getElementById('result-card');
+    const codeDisplay = document.getElementById('generated-codes-display');
+    const copyBtn = document.getElementById('copy-btn');
+    const alertMessageDiv = document.getElementById('alert-message');
+
+    // Populate teacher dropdown menu
+    // Consider fetching teacher names from database if they are dynamic
+    for (let i = 1; i <= 25; i++) {
+        const option = document.createElement('option');
+        const teacherName = `مدرس ${i}`;
+        option.value = teacherName; // Use a consistent value, maybe an ID if available
+        option.textContent = teacherName;
+        teacherSelect.appendChild(option);
+    }
+
+    function showAlert(message, type = 'danger') {
+        alertMessageDiv.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+        // Clear alert after 4 seconds
+        setTimeout(() => { alertMessageDiv.innerHTML = ''; }, 4000);
+    }
+
+    async function fetchMonths() {
+        const selectedTeacher = teacherSelect.value;
+        if (!selectedTeacher) {
+             monthsListDiv.innerHTML = '<p style="color: #666; text-align: center;">اختر مدرساً أولاً لعرض الشهور.</p>';
+             generateBtn.disabled = true;
+             return;
+        }
+
+
+        monthsListDiv.innerHTML = '<p style="text-align: center;">جاري تحميل الشهور...</p>';
+        generateBtn.disabled = true; // Disable button while loading
+
+        try {
+            // Fetch months for the selected teacher/server
+            const snapshot = await monthsRef.child(selectedTeacher).once('value');
+            const monthsData = snapshot.val();
+
+            monthsListDiv.innerHTML = ''; // Clear loading message
+
+            if (snapshot.exists() && monthsData) {
+                // Convert data to array and sort by 'order' property
+                const monthsArray = Object.entries(monthsData)
+                                        .map(([key, value]) => ({ id: key, ...value }))
+                                        .sort((a, b) => (a.order || 999) - (b.order || 999));
+
+                if (monthsArray.length === 0) {
+                     monthsListDiv.innerHTML = '<p style="color: #666; text-align: center;">لا توجد شهور مُضافة لهذا المدرس.</p>';
+                     return; // Keep button disabled
+                }
+
+                // Create checkbox for each month
+                monthsArray.forEach(month => {
+                    const monthDiv = document.createElement('div');
+                    monthDiv.className = 'month-item';
+                    monthDiv.innerHTML = `
+                        <input type="checkbox" id="month-${month.id}" data-month-id="${month.id}">
+                        <label for="month-${month.id}">${month.name || `شهر (${month.id})`}</label>
+                    `;
+                    monthsListDiv.appendChild(monthDiv);
+                });
+                generateBtn.disabled = false; // Enable button after loading months
+            } else {
+                monthsListDiv.innerHTML = '<p style="color: #666; text-align: center;">لا توجد شهور مُضافة لهذا المدرس.</p>';
+                 // Keep button disabled
+            }
+        } catch (error) {
+            console.error("Error fetching months:", error);
+            monthsListDiv.innerHTML = '<p style="color: var(--danger-color); text-align: center;">خطأ في تحميل الشهور. تحقق من قواعد الأمان.</p>';
+            // Keep button disabled
+        }
+    }
+
+    // Generates a random 6-character alphanumeric code
+    function generateRandomCode() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let code = '';
+        for (let i = 0; i < 6; i++) {
+            code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return code;
+    }
+
+    // Generates and saves the specified number of unique codes
+    async function generateAndSaveCodes() {
+        // --- UI Feedback Start ---
+        generateBtn.disabled = true;
+        generateBtn.innerHTML = '<span class="loading-spinner"></span><span>جاري الإنشاء...</span>';
+        resultCard.style.display = 'none'; // Hide previous results
+        alertMessageDiv.innerHTML = ''; // Clear previous alerts
+        // --- End UI Feedback ---
+
+        const selectedServer = teacherSelect.value;
+        const selectedMonthCheckboxes = monthsListDiv.querySelectorAll('input[type="checkbox"]:checked');
+        // Get the month IDs from checked checkboxes
+        const selectedMonthIds = Array.from(selectedMonthCheckboxes).map(cb => cb.dataset.monthId);
+        const codeCount = parseInt(codeCountInput.value);
+
+        // --- Validation ---
+        if (!selectedServer) {
+            showAlert('الرجاء اختيار مدرس/سيرفر أولاً.');
+            generateBtn.disabled = false;
+            generateBtn.innerHTML = '<span>إنشاء الأكواد</span>';
+            return;
+        }
+         if (selectedMonthIds.length === 0) {
+            showAlert('الرجاء اختيار شهر واحد على الأقل لتضمينه في الأكواد.');
+            generateBtn.disabled = false;
+            generateBtn.innerHTML = '<span>إنشاء الأكواد</span>';
+            return;
+        }
+        if (isNaN(codeCount) || codeCount < 1 || codeCount > 100) {
+             showAlert('الرجاء إدخال عدد أكواد صحيح بين 1 و 100.');
+             codeCountInput.value = Math.max(1, Math.min(100, codeCount || 1)); // Correct the value
+             generateBtn.disabled = false;
+             generateBtn.innerHTML = '<span>إنشاء الأكواد</span>';
+             return;
+        }
+        // --- End Validation ---
+
+
+        try {
+            const updates = {}; // Object to hold all database updates
+            const generatedCodes = []; // Array to store generated codes for display
+
+            for (let i = 0; i < codeCount; i++) {
+                let newCode;
+                let isCodeUnique = false;
+                let attempts = 0; // Prevent infinite loop in rare cases
+                const MAX_ATTEMPTS = 10;
+
+                // Generate a unique code
+                do {
+                    newCode = generateRandomCode();
+                    // Check if code already exists in Firebase
+                    const snapshot = await codesRef.child(newCode).get();
+                    if (!snapshot.exists()) {
+                        isCodeUnique = true;
+                    }
+                    attempts++;
+                } while (!isCodeUnique && attempts < MAX_ATTEMPTS);
+
+                if (!isCodeUnique) {
+                    // Extremely unlikely, but handle collision possibility
+                     throw new Error(`لم يتم العثور على كود فريد بعد ${MAX_ATTEMPTS} محاولات.`);
+                }
+
+                // Prepare the data to be saved for this code
+                updates[newCode] = {
+                    server: selectedServer,
+                    isUsed: false,
+                    usedBy: null, // Track who used the code
+                    usedAt: null, // Track when it was used
+                    months: selectedMonthIds // Array of month IDs this code grants access to
+                };
+                generatedCodes.push(newCode); // Add to display list
+            }
+
+            // Save all generated codes to Firebase in a single batch update
+            await codesRef.update(updates);
+
+            // --- UI Feedback Success ---
+            codeDisplay.value = generatedCodes.join('\n'); // Display codes separated by newlines
+            resultCard.style.display = 'block'; // Show the result card
+            // Uncheck selected months after generation
+            selectedMonthCheckboxes.forEach(cb => cb.checked = false);
+            showAlert(`تم إنشاء ${codeCount} أكواد بنجاح!`, 'success'); // Success message
+            // --- End UI Feedback Success ---
+
+        } catch (error) {
+            console.error("Error generating codes:", error);
+            showAlert(`حدث خطأ أثناء إنشاء الأكواد: ${error.message}`);
+        } finally {
+            // --- UI Feedback Reset ---
+            generateBtn.disabled = false; // Re-enable button
+            generateBtn.innerHTML = '<span>إنشاء الأكواد</span>'; // Restore button text
+            // --- End UI Feedback Reset ---
+        }
+    }
+
+    // --- Event Listeners ---
+    teacherSelect.addEventListener('change', fetchMonths);
+    generateBtn.addEventListener('click', generateAndSaveCodes);
+
+    // Copy to clipboard functionality
+    copyBtn.addEventListener('click', () => {
+        if (!codeDisplay.value) return; // Don't copy if empty
+
+        codeDisplay.select(); // Select the text
+        codeDisplay.setSelectionRange(0, 99999); // For mobile devices
+
+        try {
+            // Use modern clipboard API if available (more secure)
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                 navigator.clipboard.writeText(codeDisplay.value).then(() => {
+                    copyBtn.textContent = 'تم النسخ!';
+                    setTimeout(() => { copyBtn.textContent = 'نسخ جميع الأكواد'; }, 2000);
+                 }).catch(err => {
+                    console.error('Clipboard API error:', err);
+                    // Fallback for older browsers
+                    document.execCommand('copy');
+                    copyBtn.textContent = 'تم النسخ!';
+                     setTimeout(() => { copyBtn.textContent = 'نسخ جميع الأكواد'; }, 2000);
+                 });
+            } else {
+                 // Fallback for older browsers
+                document.execCommand('copy');
+                copyBtn.textContent = 'تم النسخ!';
+                setTimeout(() => { copyBtn.textContent = 'نسخ جميع الأكواد'; }, 2000);
+            }
+        } catch (err) {
+            console.error('Copying failed:', err);
+            showAlert('فشل النسخ. يرجى النسخ يدوياً.');
+        }
+    });
+
+} // End initializeAppLogic
+</script>
+</body>
+</html>
+

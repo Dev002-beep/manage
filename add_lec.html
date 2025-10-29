@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إدارة المحاضرات</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ... (نفس أكواد الـ CSS الخاصة بك) ... */
+body {
+font-family: 'Tajawal', sans-serif;
+background: linear-gradient(to bottom, #f0f0f5, #ffffff);
+margin: 0;
+padding: 20px;
+display: flex;
+justify-content: center;
+align-items: center;
+min-height: 100vh;
+}
+.container {
+width: 100%;
+max-width: 600px;
+padding: 24px;
+background-color: #fff;
+border-radius: 12px;
+box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+direction: rtl;
+}
+.appbar {
+background-color: #6C5CE7;
+color: white;
+padding: 16px;
+border-radius: 8px 8px 0 0;
+text-align: center;
+margin: -24px -24px 24px -24px;
+}
+.appbar h1 {
+margin: 0;
+font-size: 24px;
+}
+.input-group {
+margin-bottom: 20px;
+}
+.input-group label {
+display: block;
+margin-bottom: 8px;
+font-weight: bold;
+color: #2D3436;
+}
+.input-group input,
+.input-group select {
+width: 100%;
+padding: 12px;
+border: 1px solid #ccc;
+border-radius: 8px;
+box-sizing: border-box;
+font-size: 16px;
+}
+.file-picker {
+display: flex;
+align-items: center;
+gap: 10px;
+margin-bottom: 10px;
+}
+.file-picker label {
+background-color: #A29BFE;
+color: white;
+padding: 10px 15px;
+border-radius: 8px;
+cursor: pointer;
+transition: background-color 0.3s ease;
+white-space: nowrap;
+}
+.file-picker label:hover {
+background-color: #8C80F7;
+}
+.file-picker input[type="file"] {
+display: none;
+}
+.file-picker span {
+font-size: 14px;
+color: #555;
+overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;
+}
+.button {
+width: 100%;
+padding: 15px;
+border: none;
+border-radius: 8px;
+font-size: 18px;
+font-weight: bold;
+color: white;
+cursor: pointer;
+transition: background-color 0.3s ease;
+}
+.upload-btn {
+background-color: #00CE9F;
+margin-bottom: 10px;
+}
+.upload-btn:hover {
+background-color: #00B38B;
+}
+.delete-btn {
+background-color: #E74C3C;
+}
+.delete-btn:hover {
+background-color: #C0392B;
+}
+.progress-bar {
+width: 100%;
+height: 10px;
+background-color: #e0e0e0;
+border-radius: 5px;
+margin-top: 15px;
+}
+.progress {
+height: 100%;
+width: 0%;
+background-color: #6C5CE7;
+border-radius: 5px;
+transition: width 0.3s ease;
+}
+.progress-text {
+text-align: center;
+margin-top: 10px;
+font-weight: bold;
+color: #2D3436;
+}
+.hidden {
+display: none;
+}
+.modal {
+display: none;
+position: fixed;
+z-index: 1;
+left: 0;
+top: 0;
+width: 100%;
+height: 100%;
+overflow: auto;
+background-color: rgba(0,0,0,0.4);
+padding-top: 60px;
+}
+.modal-content {
+background-color: #fefefe;
+margin: 5% auto;
+padding: 20px;
+border: 1px solid #888;
+width: 80%;
+border-radius: 10px;
+box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+.modal-header {
+padding: 10px 16px;
+background-color: #6C5CE7;
+color: white;
+border-radius: 8px 8px 0 0;
+}
+.modal-body {
+padding: 2px 16px;
+max-height: 60vh;
+overflow-y: auto;
+}
+.modal-body ul {
+list-style: none;
+padding: 0;
+}
+.delete-list-item {
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 10px;
+border-bottom: 1px solid #eee;
+}
+.delete-list-item:last-child {
+border-bottom: none;
+}
+.delete-list-item button {
+background-color: #E74C3C;
+color: white;
+border: none;
+padding: 5px 10px;
+border-radius: 5px;
+cursor: pointer;
+}
+.close {
+color: #aaa;
+float: left;
+font-size: 28px;
+font-weight: bold;
+margin-left: 10px;
+}
+.close:hover, .close:focus {
+color: black;
+text-decoration: none;
+cursor: pointer;
+}
+</style>
+</head>
+<body>
+<!-- [تعديل] إضافة حاوية رئيسية مخفية -->
+<div id="page-content" style="display: none;">
+    <div class="container">
+        <div class="appbar">
+        <h1>إدارة المحاضرات</h1>
+        </div>
+        <h3>إضافة محاضرة جديدة</h3>
+        <div class="input-group">
+        <label for="lectureNumber">رقم المحاضرة</label>
+        <input type="number" id="lectureNumber" placeholder="أدخل رقم المحاضرة">
+        </div>
+        <div class="input-group">
+        <label for="title">عنوان المحاضرة</label>
+        <input type="text" id="title" placeholder="أدخل عنوان المحاضرة">
+        </div>
+        <div class="input-group">
+        <label for="year">السنة الدراسية</label>
+        <select id="year">
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="month">الشهر الدراسي (اختياري)</label>
+            <select id="month">
+                <option value="_uncategorized_" selected>غير مصنف (رفع مباشر تحت السنة)</option>
+                    </select>
+        </div>
+
+        <div class="input-group">
+        <div class="file-picker">
+        <label for="videoFile">اختيار فيديو</label>
+        <input type="file" id="videoFile" accept="video/*">
+        <span id="videoFileName">لم يتم اختيار فيديو</span>
+        </div>
+        </div>
+        <div class="input-group">
+        <div class="file-picker">
+        <label for="logoFile">اختيار شعار (اختياري)</label>
+        <input type="file" id="logoFile" accept="image/*">
+        <span id="logoFileName">لم يتم اختيار شعار</span>
+        </div>
+        </div>
+        <button id="uploadButton" class="button upload-btn">
+        <span id="uploadText">رفع المحاضرة</span>
+        </button>
+        <div id="uploadingStatus" class="hidden">
+        <div class="progress-bar">
+        <div id="progressBar" class="progress"></div>
+        </div>
+        <p id="progressText" class="progress-text">جاري الرفع: 0%</p>
+        </div>
+        <hr style="margin: 20px 0;">
+        <h3>حذف محاضرة موجودة</h3>
+        <div class="input-group">
+        <label for="deleteYear">السنة الدراسية</label>
+        <select id="deleteYear">
+            </select>
+        </div>
+        <div class="input-group">
+        <label for="deleteMonth">الشهر الدراسي</label>
+        <select id="deleteMonth">
+        <option value="_uncategorized_" selected>غير مصنف</option>
+        </select>
+        </div>
+        <button id="showDeleteButton" class="button delete-btn">
+        عرض المحاضرات للحذف
+        </button>
+        <div id="deleteModal" class="modal">
+        <div class="modal-content">
+        <div class="modal-header">
+        <span class="close">&times;</span>
+        <h2>اختيار محاضرة للحذف</h2>
+        </div>
+        <div class="modal-body">
+        <ul id="lecturesList">
+        </ul>
+        </div>
+        </div>
+        </div>
+    </div>
+</div> <!-- [تعديل] إغلاق الحاوية الرئيسية -->
+
+<script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-auth-compat.js"></script> <!-- [تعديل] إضافة Auth -->
+<script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-storage-compat.js"></script>
+<script>
+// Your Firebase configuration
+const firebaseConfig = {
+    apiKey: 'AIzaSyCdqYrVFspJ4rZwidfaPtc9PYpNlQQm09k',
+    appId: '1:284879336757:web:1f42836c2382d11b73087c',
+    messagingSenderId: '284879336757',
+    projectId: 'amgg-81ac3',
+    authDomain: 'amgg-81ac3.firebaseapp.com',
+    databaseURL: 'https://amgg-81ac3-default-rtdb.firebaseio.com',
+    storageBucket: 'amgg-81ac3.firebasestorage.app',
+    measurementId: 'G-FMZW8S6WES',
+};
+
+// Initialize Firebase
+const app = firebase.initializeApp(firebaseConfig);
+
+// ==========================================================
+// ========== حارس الأمان (Admin Guard) ==========
+// ==========================================================
+const auth = firebase.auth();
+const database = firebase.database();
+const storage = firebase.storage();
+
+auth.onAuthStateChanged(user => {
+    if (user) {
+        database.ref(`admins/${user.uid}`).once('value', snapshot => {
+            if (snapshot.exists()) {
+                console.log('Admin access granted.');
+                document.getElementById('page-content').style.display = 'block';
+                initializeAppLogic(); // [تعديل] بدء تشغيل الكود
+            } else {
+                alert('ليس لديك صلاحيات الوصول لهذه الصفحة.');
+                auth.signOut();
+                window.location.href = 'index.html';
+            }
+        });
+    } else {
+        console.log('User not logged in. Redirecting...');
+        window.location.href = 'index.html';
+    }
+});
+// ==========================================================
+// ========== نهاية حارس الأمان ==========
+// ==========================================================
+
+
+// [تعديل] تغليف كل الكود الأصلي
+function initializeAppLogic() {
+
+    // ... (الدوال المساعدة كما هي - لا تغيير) ...
+    function getDbPath(year, month = '_uncategorized_', lectureId = null) {
+        let path = `lecturess/${year}`;
+        if (month && month !== '_uncategorized_') {
+            path += `/${month}`;
+        }
+        if (lectureId) {
+            path += `/${lectureId}`;
+        }
+        return path;
+    }
+    async function getMonthDisplayName(year, monthKey) {
+        if (monthKey === '_uncategorized_') return 'غير مصنف';
+        try {
+            const snapshot = await database.ref(`months/${year}/${monthKey}/name`).once('value');
+            return snapshot.val() || monthKey; // Fallback to key if name not found
+        } catch (error) {
+            console.error("Error getting month display name:", error);
+            return monthKey;
+        }
+    }
+    async function loadMonthsForSelect(selectElement, year) {
+        selectElement.innerHTML = '<option value="_uncategorized_" selected>غير مصنف (تحت السنة مباشرة)</option>';
+        try {
+            const snapshot = await database.ref(`months/${year}`).once('value');
+            if (snapshot.exists()) {
+                const months = snapshot.val();
+                const monthsArray = Object.entries(months).map(([key, value]) => ({ id: key, ...value }));
+                monthsArray.sort((a, b) => (a.order || 999) - (b.order || 999));
+                monthsArray.forEach(month => {
+                    const option = document.createElement('option');
+                    option.value = month.id;
+                    option.textContent = month.name;
+                    selectElement.appendChild(option);
+                });
+            }
+        } catch (error) {
+            console.error("Error loading months:", error);
+        }
+    }
+
+
+    // [تعديل] تم حذف DOMContentLoaded
+    // ... (تعريف المتغيرات كما هو) ...
+    const titleInput = document.getElementById('title');
+    const lectureNumberInput = document.getElementById('lectureNumber');
+    const yearSelect = document.getElementById('year');
+    const monthSelect = document.getElementById('month'); // For upload
+    const videoFileInput = document.getElementById('videoFile');
+    const logoFileInput = document.getElementById('logoFile');
+    const videoFileNameSpan = document.getElementById('videoFileName');
+    const logoFileNameSpan = document.getElementById('logoFileName');
+    const uploadButton = document.getElementById('uploadButton');
+    const uploadingStatus = document.getElementById('uploadingStatus');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    const uploadText = document.getElementById('uploadText');
+    const deleteYearSelect = document.getElementById('deleteYear');
+    const deleteMonthSelect = document.getElementById('deleteMonth'); 
+    const showDeleteButton = document.getElementById('showDeleteButton');
+    const deleteModal = document.getElementById('deleteModal');
+    const closeModal = document.querySelector('#deleteModal .close');
+    const lecturesList = document.getElementById('lecturesList');
+
+    // ... (تعبئة قوائم المدرسين كما هي) ...
+    for (let i = 1; i <= 25; i++) {
+        const teacherName = `مدرس ${i}`;
+        const option1 = document.createElement('option');
+        option1.value = teacherName;
+        option1.textContent = teacherName;
+        yearSelect.appendChild(option1);
+        const option2 = document.createElement('option');
+        option2.value = teacherName;
+        option2.textContent = teacherName;
+        deleteYearSelect.appendChild(option2);
+    }
+    
+    // ... (تحميل الشهور وإضافة event listeners كما هي) ...
+    loadMonthsForSelect(monthSelect, yearSelect.value);
+    loadMonthsForSelect(deleteMonthSelect, deleteYearSelect.value);
+    yearSelect.addEventListener('change', () => loadMonthsForSelect(monthSelect, yearSelect.value));
+    deleteYearSelect.addEventListener('change', () => loadMonthsForSelect(deleteMonthSelect, deleteYearSelect.value));
+    videoFileInput.addEventListener('change', (event) => {
+        const fileName = event.target.files[0] ? event.target.files[0].name : 'لم يتم اختيار فيديو';
+        videoFileNameSpan.textContent = fileName;
+    });
+    logoFileInput.addEventListener('change', (event) => {
+        const fileName = event.target.files[0] ? event.target.files[0].name : 'لم يتم اختيار شعار';
+        logoFileNameSpan.textContent = fileName;
+    });
+
+    // --- [بداية التعديلات] ---
+    uploadButton.addEventListener('click', async () => {
+        const title = titleInput.value.trim();
+        const lectureNumber = lectureNumberInput.value.trim();
+        const selectedYear = yearSelect.value;
+        const selectedMonth = monthSelect.value;
+        const videoFile = videoFileInput.files[0];
+        const logoFile = logoFileInput.files[0];
+
+        if (!title || !lectureNumber || !videoFile) {
+            alert('يرجى إدخال جميع البيانات المطلوبة');
+            return;
+        }
+
+        uploadText.textContent = 'جاري الرفع...';
+        uploadButton.disabled = true;
+        uploadingStatus.classList.remove('hidden');
+
+        try {
+            const lectureId = Date.now().toString();
+            const baseName = `${lectureNumber}_${title.replace(/\s/g, '_')}`;
+
+            const videoStorageRef = storage.ref(`lectures_data/${selectedYear}/${baseName}_${lectureId}.mp4`);
+            
+            const videoUploadTask = videoStorageRef.put(videoFile); 
+
+            videoUploadTask.on('state_changed',
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    progressBar.style.width = `${progress}%`;
+                    progressText.textContent = `جاري الرفع: ${Math.round(progress)}%`;
+                },
+                (error) => {
+                    console.error('Video upload failed', error);
+                    alert(`حدث خطأ أثناء رفع الفيديو: ${error.message}`);
+                    uploadText.textContent = 'رفع المحاضرة';
+                    uploadButton.disabled = false;
+                    uploadingStatus.classList.add('hidden');
+                },
+                async () => {
+                    try {
+                        const videoPath = videoUploadTask.snapshot.ref.fullPath;
+                        let logoPath = ''; 
+                        
+                        if (logoFile) {
+                            const logoStorageRef = storage.ref(`lectures_data/${selectedYear}/logos/${baseName}_${lectureId}.jpg`);
+                            const logoUploadTask = logoStorageRef.put(logoFile);
+                            await logoUploadTask;
+                            logoPath = logoUploadTask.snapshot.ref.fullPath;
+                        }
+
+                        const dbPath = getDbPath(selectedYear, selectedMonth, lectureId);
+
+                        await database.ref(dbPath).set({
+                            id: lectureId,
+                            title: title,
+                            lectureNumber: lectureNumber,
+                            year: selectedYear,
+                            month: selectedMonth, 
+                            videoPath: videoPath,
+                            logoPath: logoPath,  
+                            timestamp: Date.now()
+                        });
+
+                        alert('تم رفع المحاضرة بنجاح!');
+                        
+                        titleInput.value = '';
+                        lectureNumberInput.value = '';
+                        videoFileInput.value = '';
+                        logoFileInput.value = '';
+                        videoFileNameSpan.textContent = 'لم يتم اختيار فيديو';
+                        logoFileNameSpan.textContent = 'لم يتم اختيار شعار';
+                        uploadText.textContent = 'رفع المحاضرة';
+                        uploadButton.disabled = false;
+                        uploadingStatus.classList.add('hidden');
+                        loadMonthsForSelect(deleteMonthSelect, deleteYearSelect.value);
+
+                    } catch (error) {
+                        console.error('Failed to save data or upload logo', error);
+                        alert(`حدث خطأ بعد رفع الفيديو: ${error.message}`);
+                        uploadText.textContent = 'رفع المحاضرة';
+                        uploadButton.disabled = false;
+                        uploadingStatus.classList.add('hidden');
+                    }
+                }
+            );
+        } catch (error) {
+            console.error('Upload failed', error);
+            alert(`حدث خطأ أثناء رفع المحاضرة: ${error.message}`);
+            uploadText.textContent = 'رفع المحاضرة';
+            uploadButton.disabled = false;
+            uploadingStatus.classList.add('hidden');
+        }
+    });
+
+    showDeleteButton.addEventListener('click', async () => {
+        const selectedYear = deleteYearSelect.value;
+        const selectedMonth = deleteMonthSelect.value;
+        lecturesList.innerHTML = '<li>جاري تحميل المحاضرات...</li>';
+
+        try {
+            const dbPath = getDbPath(selectedYear, selectedMonth);
+            const snapshot = await database.ref(dbPath).once('value');
+            lecturesList.innerHTML = ''; // Clear list
+
+            if (snapshot.exists()) {
+                const lecturesData = snapshot.val();
+                let lectures = {};
+                if (selectedMonth === '_uncategorized_') {
+                    Object.keys(lecturesData).forEach(key => {
+                        if (lecturesData[key] && lecturesData[key].title) {
+                            lectures[key] = lecturesData[key];
+                        }
+                    });
+                } else {
+                    lectures = lecturesData;
+                }
+                const lectureKeys = Object.keys(lectures).filter(key => lectures[key] && lectures[key].title);
+
+                if (lectureKeys.length > 0) {
+                    lectureKeys.forEach(lectureId => {
+                        const lecture = lectures[lectureId];
+                        const li = document.createElement('li');
+                        li.className = 'delete-list-item';
+                        li.innerHTML = `
+                            <span>${lecture.lectureNumber || ''} - ${lecture.title}</span>
+                            <button onclick="deleteLecture('${selectedYear}', '${lectureId}', '${lecture.videoPath}', '${lecture.logoPath || ''}', '${selectedMonth}')">حذف</button>
+                        `;
+                        lecturesList.appendChild(li);
+                    });
+                    deleteModal.style.display = 'block';
+                } else {
+                    alert('لا توجد محاضرات في هذا الشهر/التصنيف.');
+                }
+            } else {
+                alert('لا توجد محاضرات في هذا الشهر/التصنيف.');
+            }
+        } catch (error) {
+            console.error("Error fetching lectures:", error);
+            alert("حدث خطأ أثناء تحميل قائمة المحاضرات.");
+        }
+    });
+
+    closeModal.onclick = function() {
+        deleteModal.style.display = 'none';
+    }
+    window.onclick = function(event) {
+        if (event.target == deleteModal) {
+            deleteModal.style.display = 'none';
+        }
+    }
+
+    window.deleteLecture = async function(year, lectureId, videoPath, logoPath, month) {
+        // [تعديل] استخدام نافذة تأكيد مخصصة بدلاً من confirm
+        if (!window.confirm('هل أنت متأكد من حذف هذه المحاضرة؟ هذا الإجراء لا يمكن التراجع عنه.')) return;
+
+        try {
+            const dbPath = getDbPath(year, month, lectureId);
+            await database.ref(dbPath).remove();
+
+            const videoStorageRef = storage.ref(videoPath);
+            await videoStorageRef.delete();
+
+            if (logoPath && logoPath.length > 0) {
+                const logoStorageRef = storage.ref(logoPath);
+                await logoStorageRef.delete();
+            }
+
+            alert('تم حذف المحاضرة بنجاح!');
+            deleteModal.style.display = 'none';
+            // أعد تحميل القائمة في المودال
+            showDeleteButton.click(); 
+        } catch (error) {
+            console.error("Error deleting lecture:", error);
+            // حتى لو فشل حذف الملفات (مثلاً لأنها غير موجودة)، أغلق المودال
+            alert("تم حذف بيانات المحاضرة. ربما حدث خطأ أثناء حذف الملفات من الاستورج.");
+            deleteModal.style.display = 'none';
+            showDeleteButton.click();
+        }
+    }
+} // [تعديل] إغلاق دالة initializeAppLogic
+</script>
+</body>
+</html>
