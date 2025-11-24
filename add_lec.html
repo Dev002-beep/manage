@@ -336,7 +336,7 @@ function initializeAppLogic() {
 
     // ... (الدوال المساعدة كما هي - لا تغيير) ...
     function getDbPath(year, month = '_uncategorized_', lectureId = null) {
-        let path = `lecturess/${year}`;
+        let path = `lectures/${year}`;
         if (month && month !== '_uncategorized_') {
             path += `/${month}`;
         }
