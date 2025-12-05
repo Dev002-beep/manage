@@ -318,13 +318,16 @@
 </head>
 <body>
     
-    <!-- [تعديل] إضافة حاوية رئيسية مخفية -->
     <div id="page-content" style="display: none;">
 
         <header>
             <div class="container header-content">
                 <div class="logo">AMG MANAGEMENT</div>
                 <div class="header-buttons">
+                    <a href="add.t.html" class="header-btn" style="background-color: #27AE60;">
+                        <i class="fas fa-chalkboard-teacher"></i> إضافة مدرس
+                    </a>
+                    
                     <a href="Move_lec.html" class="header-btn" style="background-color: #F39C12;">
                         <i class="fas fa-exchange-alt"></i> نقل المحاضرات
                     </a>
@@ -340,8 +343,7 @@
                     <a href="add_lec.html" class="header-btn">
                         <i class="fas fa-upload"></i> رفع محاضرة
                     </a>
-                    <a href="make code.html" class="header-btn"> <!-- [تعديل] تم توحيد الصفحة إلى make code.html -->
-                        <i class="fas fa-user-plus"></i> إنشاء أكواد
+                    <a href="make code.html" class="header-btn"> <i class="fas fa-user-plus"></i> إنشاء أكواد
                     </a>
                     <button class="header-btn" id="logout-btn" style="background-color: var(--danger-color);">
                         <i class="fas fa-sign-out-alt"></i> تسجيل خروج
@@ -370,7 +372,6 @@
             </div>
         </div>
 
-        <!-- ... (كل النوافذ المنبثقة Modals كما هي) ... -->
         <div class="modal" id="edit-user-modal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -475,10 +476,7 @@
             </div>
         </div>
 
-    </div> <!-- [تعديل] إغلاق الحاوية الرئيسية -->
-
-
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    </div> <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-functions-compat.js"></script>
