@@ -144,6 +144,22 @@
             color: #666;
             margin-top: 5px;
         }
+        /* New Style for clickable items */
+        .copyable {
+            cursor: pointer;
+            border-bottom: 1px dashed #aaa;
+            transition: color 0.3s, border-color 0.3s;
+            position: relative;
+        }
+        .copyable:hover {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+            font-weight: bold;
+        }
+        .copyable:active {
+            color: var(--accent-color);
+        }
+        
         .user-actions {
             display: flex;
             flex-wrap: wrap;
@@ -359,7 +375,7 @@
                 </div>
 
                 <div class="search-container">
-                    <input type="text" id="user-search" placeholder="ابحث عن طالب بالبريد الإلكتروني أو السنة الدراسية...">
+                    <input type="text" id="user-search" placeholder="ابحث عن طالب بالبريد، الكود، الهاتف، أو السنة الدراسية...">
                 </div>
 
                 <div id="alert-message"></div>
@@ -561,6 +577,16 @@
                 }, 5000);
             }
 
+            // دالة للنسخ
+            window.copyText = function(text) {
+                if (!text || text === 'غير معروف') return;
+                navigator.clipboard.writeText(text).then(() => {
+                    showAlert('تم نسخ: ' + text, 'success');
+                }).catch(err => {
+                    console.error('Copy failed', err);
+                });
+            }
+
             // دالة تسجيل الخروج
             function logout() {
                 auth.signOut().then(() => {
@@ -610,15 +636,30 @@
                     const deviceId = user.deviceId || 'غير معروف';
                     const userYear = user.year || 'غير محدد';
                     const disableDate = disableTimestamp ? formatTimestamp(disableTimestamp) : 'غير محدد';
+                    const userPass = user.password || 'غير معروف';
+                    const userPhone = user.phoneNumber || 'غير معروف';
+                    const userCode = user.code || 'غير معروف';
+                    const userEmail = user.email || 'غير معروف';
 
                     const userCard = document.createElement('div');
                     userCard.className = 'user-card';
                     userCard.innerHTML = `
                         <div class="user-info">
-                            <div class="user-email">البريد الإلكتروني: ${user.email || 'غير معروف'}</div>
+                            <div class="user-email">
+                                البريد الإلكتروني: <span class="copyable" onclick="copyText('${userEmail}')" title="اضغط للنسخ">${userEmail}</span>
+                            </div>
                             <div class="user-detail">معرف الجهاز: ${deviceId}</div>
                             <div class="user-detail">
                                 السنة الدراسية: <span class="year-display">${userYear}</span>
+                            </div>
+                            <div class="user-detail">
+                                كلمة المرور: <span class="copyable" onclick="copyText('${userPass}')" title="اضغط للنسخ">${userPass}</span>
+                            </div>
+                            <div class="user-detail">
+                                رقم الهاتف: <span class="copyable" onclick="copyText('${userPhone}')" title="اضغط للنسخ">${userPhone}</span>
+                            </div>
+                            <div class="user-detail">
+                                كود التسجيل: <span class="copyable" onclick="copyText('${userCode}')" title="اضغط للنسخ">${userCode}</span>
                             </div>
                             <div class="user-detail">
                                 حالة الحساب: <span class="status-${isDisabled ? 'disabled' : 'active'}">
@@ -672,18 +713,44 @@
                 }
             }
 
-            // تحميل الأعضاء من قاعدة البيانات وتخزينهم
+            // تحميل الأعضاء والأكواد من قاعدة البيانات وتخزينهم
             function loadUsers() {
                 const usersList = document.getElementById('users-list');
                 usersList.innerHTML = '<div style="text-align: center; padding: 20px;"><p>جاري تحميل بيانات الأعضاء...</p></div>';
 
-                database.ref('users').once('value').then(async (snapshot) => {
-                    allUsersData = snapshot.val() || {};
+                // نستخدم Promise.all لجلب المستخدمين والأكواد معاً
+                Promise.all([
+                    database.ref('users').once('value'),
+                    database.ref('codes').once('value')
+                ]).then(async ([usersSnapshot, codesSnapshot]) => {
+                    let users = usersSnapshot.val() || {};
+                    const codes = codesSnapshot.val() || {};
+
+                    // دمج الكود في بيانات المستخدم
+                    for (const [code, codeData] of Object.entries(codes)) {
+                        if (codeData.usedBy && users[codeData.usedBy]) {
+                            users[codeData.usedBy].code = code;
+                        }
+                    }
+
+                    allUsersData = users;
                     await checkAndDisableExpiredAccounts(allUsersData);
+                    
+                    // إعادة التحميل للتأكد من التحديثات (اختياري ولكن آمن)
+                    // هنا سنعتمد على البيانات المحلية المحدثة لتسريع العرض
+                    // ونفترض نجاح التحديث في الخلفية، أو نعيد الجلب
                     database.ref('users').once('value').then((updatedSnapshot) => {
-                        allUsersData = updatedSnapshot.val() || {};
+                        let updatedUsers = updatedSnapshot.val() || {};
+                        // إعادة دمج الأكواد لأن الجلب الجديد لا يحتوي عليها
+                        for (const [code, codeData] of Object.entries(codes)) {
+                            if (codeData.usedBy && updatedUsers[codeData.usedBy]) {
+                                updatedUsers[codeData.usedBy].code = code;
+                            }
+                        }
+                        allUsersData = updatedUsers;
                         displayUsers(allUsersData);
                     });
+
                 }).catch(error => {
                     usersList.innerHTML = '<div style="text-align: center; padding: 20px;"><p>حدث خطأ في تحميل الأعضاء. تأكد من تطبيق قواعد الأمان.</p></div>';
                     console.error('Error loading users:', error);
@@ -697,7 +764,19 @@
                 const filteredUsers = {};
                 for (const userId in allUsersData) {
                     const user = allUsersData[userId];
-                    if ((user.email && user.email.toLowerCase().includes(searchTerm)) || (user.year && user.year.toLowerCase().includes(searchTerm))) {
+                    const email = user.email ? user.email.toLowerCase() : '';
+                    const year = user.year ? user.year.toLowerCase() : '';
+                    const phone = user.phoneNumber ? user.phoneNumber.toString() : '';
+                    const password = user.password ? user.password.toLowerCase() : '';
+                    const code = user.code ? user.code.toString() : '';
+
+                    if (
+                        email.includes(searchTerm) || 
+                        year.includes(searchTerm) ||
+                        phone.includes(searchTerm) ||
+                        password.includes(searchTerm) ||
+                        code.includes(searchTerm)
+                    ) {
                         filteredUsers[userId] = user;
                     }
                 }
