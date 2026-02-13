@@ -214,6 +214,16 @@
             background-color: #2ECC71;
             color: white;
         }
+        /* 🌟 ستايلات أزرار الويب الجديدة 🌟 */
+        .btn-web-on {
+            background-color: #00CE9F;
+            color: white;
+        }
+        .btn-web-off {
+            background-color: #95a5a6; /* رمادي */
+            color: white;
+        }
+
         .btn:hover {
             opacity: 0.9;
             transform: translateY(-2px);
@@ -361,6 +371,11 @@
                     </a>
                     <a href="make code.html" class="header-btn"> <i class="fas fa-user-plus"></i> إنشاء أكواد
                     </a>
+                    
+                    <button class="header-btn" id="disable-all-btn" style="background-color: #c0392b; font-weight: bold;">
+                        <i class="fas fa-ban"></i> تعطيل الكل
+                    </button>
+
                     <button class="header-btn" id="logout-btn" style="background-color: var(--danger-color);">
                         <i class="fas fa-sign-out-alt"></i> تسجيل خروج
                     </button>
@@ -487,6 +502,27 @@
                     <button type="button" class="btn btn-danger" id="confirm-delete-btn">
                         <span id="confirm-delete-text">حذف</span>
                         <span id="confirm-delete-loader" class="loading" style="display: none;"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal" id="disable-all-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" style="color: #c0392b;">تعطيل جميع الحسابات</h3>
+                    <span class="close-modal">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <p style="color: #c0392b; font-weight: bold; font-size: 1.1em;">تحذير خطير!</p>
+                    <p>هل أنت متأكد تماماً أنك تريد تعطيل <span style="text-decoration: underline;">جميع</span> الحسابات في النظام؟</p>
+                    <p>سيتم منع دخول جميع الطلاب فوراً.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary close-modal-btn">إلغاء</button>
+                    <button type="button" class="btn btn-danger" id="confirm-disable-all-btn">
+                        <span id="confirm-disable-all-text">نعم، عطل الكل</span>
+                        <span id="confirm-disable-all-loader" class="loading" style="display: none;"></span>
                     </button>
                 </div>
             </div>
@@ -640,6 +676,12 @@
                     const userPhone = user.phoneNumber || 'غير معروف';
                     const userCode = user.code || 'غير معروف';
                     const userEmail = user.email || 'غير معروف';
+                    
+                    // 🌟 حالة صلاحية الويب الحالية
+                    const isWebAllowed = user.allowWebAccess === true;
+                    // 🌟 تحديد الكلاس والايقونة والنص بناءً على الحالة
+                    const webBtnClass = isWebAllowed ? 'btn-web-on' : 'btn-web-off';
+                    const webBtnText = isWebAllowed ? 'Web: ON' : 'Web: OFF';
 
                     const userCard = document.createElement('div');
                     userCard.className = 'user-card';
@@ -671,6 +713,10 @@
                             </div>
                         </div>
                         <div class="user-actions">
+                            <button class="btn ${webBtnClass} toggle-web-btn" onclick="toggleWebAccess(this, '${userId}')">
+                                <i class="fas fa-globe"></i> ${webBtnText}
+                            </button>
+
                             <button class="btn btn-warning toggle-status-btn" data-user-id="${userId}" data-current-status="${isDisabled}">
                                 <i class="fas ${isDisabled ? 'fa-unlock' : 'fa-lock'}"></i> ${isDisabled ? 'تفعيل' : 'تعطيل'}
                             </button>
@@ -692,6 +738,50 @@
                 }
                 attachButtonListeners();
             }
+
+            // 🌟🌟 دالة تبديل صلاحية الويب (On/Off) 🌟🌟
+            window.toggleWebAccess = function(btnElement, uid) {
+                // معرفة الحالة الحالية من الكلاس الموجود
+                const isCurrentlyOn = btnElement.classList.contains('btn-web-on');
+                const newState = !isCurrentlyOn; // عكس الحالة
+
+                // تحديث الواجهة فوراً (Optimistic UI)
+                if (newState) {
+                    // تفعيل
+                    btnElement.classList.remove('btn-web-off');
+                    btnElement.classList.add('btn-web-on');
+                    btnElement.innerHTML = '<i class="fas fa-globe"></i> Web: ON';
+                } else {
+                    // تعطيل
+                    btnElement.classList.remove('btn-web-on');
+                    btnElement.classList.add('btn-web-off');
+                    btnElement.innerHTML = '<i class="fas fa-globe"></i> Web: OFF';
+                }
+
+                // تحديث قاعدة البيانات
+                database.ref('users/' + uid).update({
+                    allowWebAccess: newState
+                }).then(() => {
+                    console.log('Web access updated successfully for ' + uid);
+                    // تحديث البيانات المحلية عشان لو عمل بحث التغيير يفضل موجود
+                    if(allUsersData[uid]) {
+                        allUsersData[uid].allowWebAccess = newState;
+                    }
+                }).catch(error => {
+                    console.error(error);
+                    alert('فشل تحديث الصلاحية، تأكد من الاتصال.');
+                    // إعادة الزر لوضعه السابق في حال الفشل
+                    if (!newState) {
+                        btnElement.classList.remove('btn-web-off');
+                        btnElement.classList.add('btn-web-on');
+                        btnElement.innerHTML = '<i class="fas fa-globe"></i> Web: ON';
+                    } else {
+                        btnElement.classList.remove('btn-web-on');
+                        btnElement.classList.add('btn-web-off');
+                        btnElement.innerHTML = '<i class="fas fa-globe"></i> Web: OFF';
+                    }
+                });
+            };
 
             // دالة للتحقق من الحسابات المنتهية وتحديثها
             async function checkAndDisableExpiredAccounts(usersData) {
@@ -736,12 +826,10 @@
                     allUsersData = users;
                     await checkAndDisableExpiredAccounts(allUsersData);
                     
-                    // إعادة التحميل للتأكد من التحديثات (اختياري ولكن آمن)
-                    // هنا سنعتمد على البيانات المحلية المحدثة لتسريع العرض
-                    // ونفترض نجاح التحديث في الخلفية، أو نعيد الجلب
+                    // إعادة التحميل للتأكد من التحديثات
                     database.ref('users').once('value').then((updatedSnapshot) => {
                         let updatedUsers = updatedSnapshot.val() || {};
-                        // إعادة دمج الأكواد لأن الجلب الجديد لا يحتوي عليها
+                        // إعادة دمج الأكواد
                         for (const [code, codeData] of Object.entries(codes)) {
                             if (codeData.usedBy && updatedUsers[codeData.usedBy]) {
                                 updatedUsers[codeData.usedBy].code = code;
@@ -783,8 +871,7 @@
                 displayUsers(filteredUsers);
             }
 
-            // ... (باقي الدوال المساعدة: openEditUserModal, saveUserEdits, openClearDeviceModal, ...)
-            // ... (هي كما هي) ...
+            // ... (باقي الدوال المساعدة) ...
             function openEditUserModal(e) {
                 const userId = e.currentTarget.getAttribute('data-user-id');
                 const user = allUsersData[userId];
@@ -868,6 +955,51 @@
                 document.getElementById('delete-user-id').value = userId;
                 document.getElementById('delete-user-modal').style.display = 'flex';
             }
+
+            // ============================================
+            // ======== وظائف "تعطيل الكل" الجديدة ========
+            // ============================================
+            function openDisableAllModal() {
+                document.getElementById('disable-all-modal').style.display = 'flex';
+            }
+
+            async function disableAllUsers() {
+                const confirmBtn = document.getElementById('confirm-disable-all-btn');
+                const confirmText = document.getElementById('confirm-disable-all-text');
+                const confirmLoader = document.getElementById('confirm-disable-all-loader');
+
+                confirmText.style.display = 'none';
+                confirmLoader.style.display = 'inline-block';
+                confirmBtn.disabled = true;
+
+                try {
+                    const updates = {};
+                    // المرور على كل المستخدمين المحملين محلياً
+                    for (const userId in allUsersData) {
+                        // تعيين حالة التعطيل لكل مستخدم
+                        updates[`users/${userId}/isDisabled`] = true;
+                    }
+
+                    if (Object.keys(updates).length > 0) {
+                        // تنفيذ التحديث دفعة واحدة في Firebase
+                        await database.ref().update(updates);
+                        showAlert('تم تعطيل جميع الحسابات بنجاح.', 'success');
+                    } else {
+                        showAlert('لا يوجد مستخدمين لتعطيلهم.', 'warning');
+                    }
+
+                    closeModal('disable-all-modal');
+                    loadUsers(); // تحديث الواجهة
+                } catch (error) {
+                    console.error('Error disabling all users:', error);
+                    showAlert('حدث خطأ أثناء محاولة تعطيل الجميع.', 'danger');
+                } finally {
+                    confirmText.style.display = 'inline-block';
+                    confirmLoader.style.display = 'none';
+                    confirmBtn.disabled = false;
+                }
+            }
+
             async function clearDeviceId() {
                 const userId = document.getElementById('clear-device-user-id').value;
                 const confirmBtn = document.getElementById('confirm-clear-device-btn');
@@ -998,6 +1130,10 @@
             document.getElementById('confirm-delete-btn').addEventListener('click', deleteUser);
             document.getElementById('confirm-toggle-btn').addEventListener('click', toggleUserStatus);
             
+            // ربط أزرار "تعطيل الكل"
+            document.getElementById('disable-all-btn').addEventListener('click', openDisableAllModal);
+            document.getElementById('confirm-disable-all-btn').addEventListener('click', disableAllUsers);
+
             document.querySelectorAll('.close-modal, .close-modal-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();

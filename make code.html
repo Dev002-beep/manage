@@ -1,12 +1,10 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
+<html lang="ar" dir="rtl"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>إنشاء أكواد تفعيل مجمعة</title>
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&amp;display=swap" rel="stylesheet">
 <style>
-/* ... (أكواد الـ CSS كما أرسلتها أنت) ... */
+/* ... (أكواد الـ CSS كما هي) ... */
 :root {
 --primary-color: #06467A;
 --secondary-color: #A29BFE;
@@ -160,19 +158,28 @@ font-weight: 500;
 background-color: #f8d7da;
 color: #721c24;
 }
+/* ستايل جديد للتشيك بوكس الخاص بالويب */
+.web-option-container {
+    background-color: #eef2ff;
+    border: 1px solid #c7d2fe;
+    padding: 15px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 </style>
 </head>
 <body>
 
-<div id="page-content" style="display: none;">
-<div class="container">
+<div id="page-content" style="display: none;"> <div class="container">
 <h2 class="form-title">إنشاء أكواد تفعيل مجمعة</h2>
 <div id="alert-message"></div>
 
 <div class="form-group">
 <label for="teacher-select">1. اختر المدرس/السيرفر</label>
 <select id="teacher-select" class="form-select">
-<option value="" disabled selected>اختر مدرساً...</option>
+<option value="" disabled="" selected="">اختر مدرساً...</option>
 </select>
 </div>
 
@@ -188,22 +195,33 @@ color: #721c24;
 <input type="number" id="code-count" class="form-control" value="1" min="1" max="100">
 </div>
 
-<button id="generate-btn" class="btn" disabled>
+<div class="form-group">
+    <label>4. خيارات الصلاحية</label>
+    <div class="web-option-container">
+        <input type="checkbox" id="allow-web-check" style="width: 20px; height: 20px; accent-color: var(--primary-color); cursor: pointer;">
+        <label for="allow-web-check" style="margin: 0; cursor: pointer; color: var(--primary-color);">تفعيل الدخول من الويب (iPhone)</label>
+    </div>
+</div>
+
+<button id="generate-btn" class="btn" disabled="">
 <span>إنشاء الأكواد</span>
 </button>
 
 <div id="result-card" class="result-card">
 <h4>تم إنشاء الأكواد بنجاح:</h4>
-<textarea id="generated-codes-display" class="generated-codes" readonly></textarea>
+<textarea id="generated-codes-display" class="generated-codes" readonly=""></textarea>
 <button id="copy-btn" class="copy-btn">نسخ جميع الأكواد</button>
 </div>
 </div>
-</div> <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script> <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+</div> 
+
+<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script> 
+<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
 
 <script>
 // ==========================================================
-// تم وضع إعدادات Firebase الخاصة بك هنا
+// إعدادات Firebase
 // ==========================================================
 const firebaseConfig = {
 apiKey: 'AIzaSyCdqYrVFspJ4rZwidfaPtc9PYpNlQQm09k',
@@ -233,7 +251,7 @@ database.ref(`admins/${user.uid}`).once('value', snapshot => {
 if (snapshot.exists()) {
 console.log('Admin access granted.');
 document.getElementById('page-content').style.display = 'block';
-initializeAppLogic(); // [تعديل] بدء تشغيل الكود
+initializeAppLogic();
 } else {
 alert('ليس لديك صلاحيات الوصول لهذه الصفحة.');
 auth.signOut();
@@ -245,12 +263,8 @@ console.log('User not logged in. Redirecting...');
 window.location.href = 'index.html';
 }
 });
-// ==========================================================
-// ========== نهاية حارس الأمان ==========
-// ==========================================================
 
 
-// [تعديل] تغليف كل الكود الأصلي
 function initializeAppLogic() {
 
 const codesRef = database.ref('codes');
@@ -265,6 +279,8 @@ const resultCard = document.getElementById('result-card');
 const codeDisplay = document.getElementById('generated-codes-display');
 const copyBtn = document.getElementById('copy-btn');
 const alertMessageDiv = document.getElementById('alert-message');
+// 🌟 العنصر الجديد
+const allowWebCheck = document.getElementById('allow-web-check');
 
 // Populate teacher dropdown menu
 for (let i = 1; i <= 25; i++) {
@@ -316,20 +332,14 @@ monthsListDiv.innerHTML = '<p style="color: red;">خطأ في تحميل الش�
 }
 }
 
-// ==========================================================
-// ========== [تعديل] تم تغيير هذه الدالة ==========
-// ==========================================================
 function generateRandomCode() {
-// [تعديل] إنشاء كود من 11 رقم
-const chars = '0123456789'; // أرقام فقط
+const chars = '0123456789';
 let code = '';
-for (let i = 0; i < 11; i++) { // [تعديل] تم تغيير الطول إلى 11
+for (let i = 0; i < 11; i++) {
 code += chars.charAt(Math.floor(Math.random() * chars.length));
 }
 return code;
 }
-// ==========================================================
-// ==========================================================
 
 
 async function generateAndSaveCodes() {
@@ -340,8 +350,10 @@ alertMessageDiv.innerHTML = '';
 
 const selectedServer = teacherSelect.value;
 const selectedMonthCheckboxes = monthsListDiv.querySelectorAll('input[type="checkbox"]:checked');
-const selectedMonthIds = Array.from(selectedMonthCheckboxes).map(cb => cb.dataset.monthId);
+const selectedMonthIds = Array.from(selectedMonthCheckboxes).map(cb => cb.dataset.monthId); // تخزين الـ Keys
 const codeCount = parseInt(codeCountInput.value) || 1;
+// 🌟 قراءة حالة الويب
+const isWebAllowed = allowWebCheck.checked;
 
 if (!selectedServer || selectedMonthIds.length === 0) {
 showAlert('الرجاء اختيار مدرس وشهر واحد على الأقل.');
@@ -365,20 +377,22 @@ isCodeUnique = true;
 }
 } while (!isCodeUnique);
 
+// 🌟 إضافة خاصية allowWeb
 updates[newCode] = {
 server: selectedServer,
 isUsed: false,
-months: selectedMonthIds
+months: selectedMonthIds,
+allowWeb: isWebAllowed // true or false
 };
 generatedCodes.push(newCode);
 }
 
-// Save all codes in one batch
 await codesRef.update(updates);
 
 codeDisplay.value = generatedCodes.join('\n');
 resultCard.style.display = 'block';
 selectedMonthCheckboxes.forEach(cb => cb.checked = false);
+// إعادة تعيين الشيك بوكس إذا أردت (اختياري، سأتركه كما هو لتسهيل إنشاء المزيد بنفس الإعدادات)
 
 } catch (error) {
 console.error("Error generating codes:", error);
@@ -400,7 +414,7 @@ copyBtn.textContent = 'تم النسخ!';
 setTimeout(() => { copyBtn.textContent = 'نسخ جميع الأكواد'; }, 2000);
 });
 
-} // [تعديل] إغلاق دالة initializeAppLogic
+}
 </script>
-</body>
-</html>
+
+</body></html>
