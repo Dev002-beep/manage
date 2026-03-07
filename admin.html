@@ -214,16 +214,6 @@
             background-color: #2ECC71;
             color: white;
         }
-        /* 🌟 ستايلات أزرار الويب الجديدة 🌟 */
-        .btn-web-on {
-            background-color: #00CE9F;
-            color: white;
-        }
-        .btn-web-off {
-            background-color: #95a5a6; /* رمادي */
-            color: white;
-        }
-
         .btn:hover {
             opacity: 0.9;
             transform: translateY(-2px);
@@ -371,6 +361,10 @@
                     </a>
                     <a href="make code.html" class="header-btn"> <i class="fas fa-user-plus"></i> إنشاء أكواد
                     </a>
+
+                    <button class="header-btn" id="settings-btn" style="background-color: #2980B9;">
+                        <i class="fas fa-cog"></i> إعدادات التواصل
+                    </button>
                     
                     <button class="header-btn" id="disable-all-btn" style="background-color: #c0392b; font-weight: bold;">
                         <i class="fas fa-ban"></i> تعطيل الكل
@@ -528,7 +522,35 @@
             </div>
         </div>
 
-    </div> <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+        <div class="modal" id="settings-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">إعدادات التواصل</h3>
+                    <span class="close-modal">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="facebook-link">رابط صفحة الفيسبوك</label>
+                        <input type="text" id="facebook-link" class="form-control" dir="ltr" placeholder="مثال: https://facebook.com/yourpage">
+                    </div>
+                    <div class="form-group">
+                        <label for="whatsapp-number">رقم هاتف الواتساب</label>
+                        <input type="text" id="whatsapp-number" class="form-control" dir="ltr" placeholder="مثال: +201012345678">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary close-modal-btn">إلغاء</button>
+                    <button type="button" class="btn btn-primary" id="save-settings-btn">
+                        <span id="save-settings-text">حفظ التعديلات</span>
+                        <span id="save-settings-loader" class="loading" style="display: none;"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div> 
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-functions-compat.js"></script>
@@ -594,7 +616,7 @@
         // ==========================================================
 
 
-        // [تعديل] تغليف كل الكود الأصلي المتبقي
+        // تغليف كل الكود الأصلي المتبقي
         function initializeAppLogic() {
         
             let allUsersData = {};
@@ -676,12 +698,6 @@
                     const userPhone = user.phoneNumber || 'غير معروف';
                     const userCode = user.code || 'غير معروف';
                     const userEmail = user.email || 'غير معروف';
-                    
-                    // 🌟 حالة صلاحية الويب الحالية
-                    const isWebAllowed = user.allowWebAccess === true;
-                    // 🌟 تحديد الكلاس والايقونة والنص بناءً على الحالة
-                    const webBtnClass = isWebAllowed ? 'btn-web-on' : 'btn-web-off';
-                    const webBtnText = isWebAllowed ? 'Web: ON' : 'Web: OFF';
 
                     const userCard = document.createElement('div');
                     userCard.className = 'user-card';
@@ -713,10 +729,6 @@
                             </div>
                         </div>
                         <div class="user-actions">
-                            <button class="btn ${webBtnClass} toggle-web-btn" onclick="toggleWebAccess(this, '${userId}')">
-                                <i class="fas fa-globe"></i> ${webBtnText}
-                            </button>
-
                             <button class="btn btn-warning toggle-status-btn" data-user-id="${userId}" data-current-status="${isDisabled}">
                                 <i class="fas ${isDisabled ? 'fa-unlock' : 'fa-lock'}"></i> ${isDisabled ? 'تفعيل' : 'تعطيل'}
                             </button>
@@ -738,50 +750,6 @@
                 }
                 attachButtonListeners();
             }
-
-            // 🌟🌟 دالة تبديل صلاحية الويب (On/Off) 🌟🌟
-            window.toggleWebAccess = function(btnElement, uid) {
-                // معرفة الحالة الحالية من الكلاس الموجود
-                const isCurrentlyOn = btnElement.classList.contains('btn-web-on');
-                const newState = !isCurrentlyOn; // عكس الحالة
-
-                // تحديث الواجهة فوراً (Optimistic UI)
-                if (newState) {
-                    // تفعيل
-                    btnElement.classList.remove('btn-web-off');
-                    btnElement.classList.add('btn-web-on');
-                    btnElement.innerHTML = '<i class="fas fa-globe"></i> Web: ON';
-                } else {
-                    // تعطيل
-                    btnElement.classList.remove('btn-web-on');
-                    btnElement.classList.add('btn-web-off');
-                    btnElement.innerHTML = '<i class="fas fa-globe"></i> Web: OFF';
-                }
-
-                // تحديث قاعدة البيانات
-                database.ref('users/' + uid).update({
-                    allowWebAccess: newState
-                }).then(() => {
-                    console.log('Web access updated successfully for ' + uid);
-                    // تحديث البيانات المحلية عشان لو عمل بحث التغيير يفضل موجود
-                    if(allUsersData[uid]) {
-                        allUsersData[uid].allowWebAccess = newState;
-                    }
-                }).catch(error => {
-                    console.error(error);
-                    alert('فشل تحديث الصلاحية، تأكد من الاتصال.');
-                    // إعادة الزر لوضعه السابق في حال الفشل
-                    if (!newState) {
-                        btnElement.classList.remove('btn-web-off');
-                        btnElement.classList.add('btn-web-on');
-                        btnElement.innerHTML = '<i class="fas fa-globe"></i> Web: ON';
-                    } else {
-                        btnElement.classList.remove('btn-web-on');
-                        btnElement.classList.add('btn-web-off');
-                        btnElement.innerHTML = '<i class="fas fa-globe"></i> Web: OFF';
-                    }
-                });
-            };
 
             // دالة للتحقق من الحسابات المنتهية وتحديثها
             async function checkAndDisableExpiredAccounts(usersData) {
@@ -1100,6 +1068,57 @@
                     confirmBtn.disabled = false;
                 }
             }
+            
+            // ============================================
+            // ======== وظائف "إعدادات التواصل" المحدثة ===
+            // ============================================
+            async function openSettingsModal() {
+                document.getElementById('settings-modal').style.display = 'flex';
+                try {
+                    // جلب البيانات من مسار contact_links
+                    const snapshot = await database.ref('contact_links').once('value');
+                    const data = snapshot.val() || {};
+                    document.getElementById('facebook-link').value = data.facebook || '';
+                    document.getElementById('whatsapp-number').value = data.whatsapp || '';
+                } catch (error) {
+                    console.error('Error fetching settings:', error);
+                    showAlert('حدث خطأ أثناء جلب الإعدادات.', 'danger');
+                }
+            }
+
+            async function saveSettings() {
+                const fbLink = document.getElementById('facebook-link').value.trim();
+                const waNumber = document.getElementById('whatsapp-number').value.trim();
+                
+                const confirmBtn = document.getElementById('save-settings-btn');
+                const confirmText = document.getElementById('save-settings-text');
+                const confirmLoader = document.getElementById('save-settings-loader');
+                
+                confirmText.style.display = 'none';
+                confirmLoader.style.display = 'inline-block';
+                confirmBtn.disabled = true;
+
+                try {
+                    // التعديل الذكي: استخدام update بـ null للحذف عند ترك الحقل فارغاً
+                    const updates = {
+                        facebook: fbLink === "" ? null : fbLink,
+                        whatsapp: waNumber === "" ? null : waNumber
+                    };
+
+                    await database.ref('contact_links').update(updates);
+                    
+                    showAlert('تم حفظ إعدادات التواصل بنجاح.', 'success');
+                    closeModal('settings-modal');
+                } catch (error) {
+                    console.error('Error saving settings:', error);
+                    showAlert('حدث خطأ أثناء الحفظ.', 'danger');
+                } finally {
+                    confirmText.style.display = 'inline-block';
+                    confirmLoader.style.display = 'none';
+                    confirmBtn.disabled = false;
+                }
+            }
+
             function closeModal(modalId) {
                 const modal = document.getElementById(modalId);
                 modal.style.display = 'none';
@@ -1134,6 +1153,10 @@
             document.getElementById('disable-all-btn').addEventListener('click', openDisableAllModal);
             document.getElementById('confirm-disable-all-btn').addEventListener('click', disableAllUsers);
 
+            // ربط أزرار "إعدادات التواصل"
+            document.getElementById('settings-btn').addEventListener('click', openSettingsModal);
+            document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
+
             document.querySelectorAll('.close-modal, .close-modal-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -1149,7 +1172,7 @@
                 searchTimeout = setTimeout(filterUsers, 300);
             });
 
-            // [تعديل] بدء تحميل المستخدمين
+            // بدء تحميل المستخدمين
             loadUsers();
         
         } // نهاية دالة initializeAppLogic
