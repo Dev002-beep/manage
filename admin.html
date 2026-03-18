@@ -7,7 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* ... (نفس أكواد الـ CSS الخاصة بك) ... */
         :root {
             --primary-color: #6C5CE7;
             --secondary-color: #A29BFE;
@@ -144,7 +143,6 @@
             color: #666;
             margin-top: 5px;
         }
-        /* New Style for clickable items */
         .copyable {
             cursor: pointer;
             border-bottom: 1px dashed #aaa;
@@ -188,10 +186,6 @@
         }
         .btn-success {
             background-color: var(--accent-color);
-            color: white;
-        }
-        .btn-warning {
-            background-color: #F39C12;
             color: white;
         }
         .btn-info {
@@ -281,54 +275,78 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-        .alert {
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        .alert-success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-        .alert-danger {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-        .status-active {
-            color: #27AE60;
-        }
-        .status-disabled {
-            color: #E74C3C;
-        }
         .year-display {
             padding: 8px 15px;
             background-color: #ddd;
             border-radius: 5px;
             font-weight: 500;
         }
+
+        /* --- زر التعطيل والتفعيل الجديد (Toggle Switch) --- */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+            direction: ltr; 
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #E74C3C; transition: .4s; border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
+            background-color: white; transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #27AE60; }
+        input:checked + .slider:before { transform: translateX(20px); }
+        .status-text { font-size: 14px; font-weight: bold; margin-right: 8px; }
+        .text-active { color: #27AE60; }
+        .text-disabled { color: #E74C3C; }
+
+        /* --- رسالة الإشعار من الأسفل (Toast) --- */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 15px 20px;
+            position: fixed;
+            z-index: 9999;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-size: 16px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        #toast.show {
+            visibility: visible;
+            animation: fadein 0.4s, fadeout 0.4s 2.6s;
+        }
+        @keyframes fadein {
+            from {bottom: 0; opacity: 0;} 
+            to {bottom: 30px; opacity: 1;}
+        }
+        @keyframes fadeout {
+            from {bottom: 30px; opacity: 1;} 
+            to {bottom: 0; opacity: 0;}
+        }
+
         @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .logo {
-                margin-bottom: 10px;
-            }
-            .header-buttons {
-                width: 100%;
-                justify-content: center;
-            }
-            .header-btn {
-                flex: 1 1 auto;
-                justify-content: center;
-            }
-            .search-container {
-                flex-direction: column;
-            }
-            .panel-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
+            .header-content { flex-direction: column; align-items: flex-start; }
+            .logo { margin-bottom: 10px; }
+            .header-buttons { width: 100%; justify-content: center; }
+            .header-btn { flex: 1 1 auto; justify-content: center; }
+            .search-container { flex-direction: column; }
+            .panel-header { flex-direction: column; align-items: flex-start; }
         }
     </style>
 </head>
@@ -343,11 +361,10 @@
                     <a href="add.t.html" class="header-btn" style="background-color: #27AE60;">
                         <i class="fas fa-chalkboard-teacher"></i> إضافة مدرس
                     </a>
-                    
                     <a href="Move_lec.html" class="header-btn" style="background-color: #F39C12;">
                         <i class="fas fa-exchange-alt"></i> نقل المحاضرات
                     </a>
-                    <a href="dashboard.html" class="header-btn" style="background-color: #8E44AD; text-decoration: none; padding: 10px 15px; border-radius: 5px; color: white; display: inline-flex; align-items: center; gap: 5px;">
+                    <a href="dashboard.html" class="header-btn" style="background-color: #8E44AD;">
                         <i class="fas fa-chart-line"></i> الإحصائيات
                     </a>
                     <a href="manage_monthes.html" class="header-btn" style="background-color: #3498DB;">
@@ -387,8 +404,6 @@
                     <input type="text" id="user-search" placeholder="ابحث عن طالب بالبريد، الكود، الهاتف، أو السنة الدراسية...">
                 </div>
 
-                <div id="alert-message"></div>
-
                 <div class="users-list" id="users-list">
                     <div style="text-align: center; padding: 20px;">
                         <p>جاري تحميل بيانات الأعضاء...</p>
@@ -423,25 +438,7 @@
                 </div>
             </div>
         </div>
-        <div class="modal" id="clear-device-modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title">تغيير الجهاز</h3>
-                    <span class="close-modal">&times;</span>
-                </div>
-                <div class="modal-body">
-                    <p>هل أنت متأكد أنك تريد مسح معرف الجهاز لهذا العضو؟ هذا سيسمح له بتسجيل الدخول من جهاز جديد.</p>
-                    <input type="hidden" id="clear-device-user-id">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary close-modal-btn">إلغاء</button>
-                    <button type="button" class="btn btn-info" id="confirm-clear-device-btn">
-                        <span id="confirm-clear-device-text">تأكيد</span>
-                        <span id="confirm-clear-device-loader" class="loading" style="display: none;"></span>
-                    </button>
-                </div>
-            </div>
-        </div>
+        
         <div class="modal" id="force-logout-modal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -449,38 +446,19 @@
                     <span class="close-modal">&times;</span>
                 </div>
                 <div class="modal-body">
-                    <p>هل أنت متأكد أنك تريد تسجيل خروج هذا العضو إجباريًا؟</p>
+                    <p>هل أنت متأكد أنك تريد تسجيل خروج هذا العضو إجباريًا من الجهاز الحالي؟</p>
                     <input type="hidden" id="force-logout-user-id">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary close-modal-btn">إلغاء</button>
                     <button type="button" class="btn btn-danger" id="confirm-force-logout-btn">
-                        <span id="confirm-force-logout-text">تأكيد</span>
+                        <span id="confirm-force-logout-text">تأكيد الطرد</span>
                         <span id="confirm-force-logout-loader" class="loading" style="display: none;"></span>
                     </button>
                 </div>
             </div>
         </div>
-        <div class="modal" id="toggle-status-modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title" id="toggle-status-title">تعطيل الحساب</h3>
-                    <span class="close-modal">&times;</span>
-                </div>
-                <div class="modal-body">
-                    <p id="toggle-status-message">هل أنت متأكد أنك تريد تعطيل هذا الحساب؟</p>
-                    <input type="hidden" id="toggle-user-id">
-                    <input type="hidden" id="current-status">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary close-modal-btn">إلغاء</button>
-                    <button type="button" class="btn btn-warning" id="confirm-toggle-btn">
-                        <span id="confirm-toggle-text">تأكيد</span>
-                        <span id="confirm-toggle-loader" class="loading" style="display: none;"></span>
-                    </button>
-                </div>
-            </div>
-        </div>
+        
         <div class="modal" id="delete-user-modal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -509,13 +487,12 @@
                 </div>
                 <div class="modal-body">
                     <p style="color: #c0392b; font-weight: bold; font-size: 1.1em;">تحذير خطير!</p>
-                    <p>هل أنت متأكد تماماً أنك تريد تعطيل <span style="text-decoration: underline;">جميع</span> الحسابات في النظام؟</p>
-                    <p>سيتم منع دخول جميع الطلاب فوراً.</p>
+                    <p>هل أنت متأكد تماماً أنك تريد تعطيل وطرد <span style="text-decoration: underline;">جميع</span> الحسابات في النظام؟</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary close-modal-btn">إلغاء</button>
                     <button type="button" class="btn btn-danger" id="confirm-disable-all-btn">
-                        <span id="confirm-disable-all-text">نعم، عطل الكل</span>
+                        <span id="confirm-disable-all-text">نعم، عطل واطرد الكل</span>
                         <span id="confirm-disable-all-loader" class="loading" style="display: none;"></span>
                     </button>
                 </div>
@@ -549,14 +526,17 @@
         </div>
 
     </div> 
+    
+    <div id="toast">
+        <i class="fas fa-check-circle" style="color: #2ecc71;"></i> 
+        <span id="toast-msg"></span>
+    </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-functions-compat.js"></script>
 
     <script>
-        // منع فتح فحص العنصر
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.onkeydown = function(e) {
             if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === 'I') || (e.ctrlKey && e.shiftKey && e.key === 'C') || (e.ctrlKey && e.shiftKey && e.key === 'J')) {
@@ -564,7 +544,6 @@
             }
         };
 
-        // تهيئة Firebase
         const firebaseConfig = {
             apiKey: 'AIzaSyCdqYrVFspJ4rZwidfaPtc9PYpNlQQm09k',
             appId: '1:284879336757:web:1f42836c2382d11b73087c',
@@ -573,107 +552,68 @@
             authDomain: 'amgg-81ac3.firebaseapp.com',
             databaseURL: 'https://amgg-81ac3-default-rtdb.firebaseio.com',
             storageBucket: 'amgg-81ac3.firebasestorage.app',
-            measurementId: 'G-FMZW8S6WES',
         };
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
 
-        // ==========================================================
-        // ========== حارس الأمان (Admin Guard) ==========
-        // ==========================================================
         const auth = firebase.auth();
         const database = firebase.database();
-        const functions = firebase.functions();
 
         auth.onAuthStateChanged(user => {
             if (user) {
-                // 1. المستخدم مسجل دخوله، نتأكد الآن هل هو أدمن؟
                 database.ref(`admins/${user.uid}`).once('value', snapshot => {
                     if (snapshot.exists()) {
-                        // 2. نعم، هو أدمن. اسمح له برؤية الصفحة
-                        console.log('Admin access granted.');
                         document.getElementById('page-content').style.display = 'block';
-                        
-                        // [هام] استدعاء الدالة الرئيسية لبدء تشغيل الصفحة
                         initializeAppLogic(); 
-                        
                     } else {
-                        // 3. هو مستخدم عادي، ليس أدمن. اطرده
                         alert('ليس لديك صلاحيات الوصول لهذه الصفحة.');
                         auth.signOut();
                         window.location.href = 'index.html';
                     }
                 });
             } else {
-                // 4. المستخدم غير مسجل دخوله أصلاً. اطرده
-                console.log('User not logged in. Redirecting...');
                 window.location.href = 'index.html';
             }
         });
-        // ==========================================================
-        // ========== نهاية حارس الأمان ==========
-        // ==========================================================
 
-
-        // تغليف كل الكود الأصلي المتبقي
         function initializeAppLogic() {
         
             let allUsersData = {};
             let searchTimeout;
 
-            // دالة لعرض رسالة تنبيه
-            function showAlert(message, type = 'success') {
-                const alertDiv = document.getElementById('alert-message');
-                alertDiv.innerHTML = `
-                    <div class="alert alert-${type}">
-                        ${message}
-                    </div>
-                `;
-                setTimeout(() => {
-                    alertDiv.innerHTML = '';
-                }, 5000);
+            function showToast(message, type = 'success') {
+                const toast = document.getElementById("toast");
+                const toastMsg = document.getElementById("toast-msg");
+                toastMsg.innerText = message;
+                
+                const icon = toast.querySelector('i');
+                if (type === 'success') {
+                    icon.className = 'fas fa-check-circle';
+                    icon.style.color = '#2ecc71';
+                } else {
+                    icon.className = 'fas fa-exclamation-circle';
+                    icon.style.color = '#e74c3c';
+                }
+
+                toast.className = "show";
+                setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
             }
 
-            // دالة للنسخ
             window.copyText = function(text) {
-                if (!text || text === 'غير معروف') return;
+                if (!text || text === 'غير معروف' || text === '') return;
                 navigator.clipboard.writeText(text).then(() => {
-                    showAlert('تم نسخ: ' + text, 'success');
-                }).catch(err => {
-                    console.error('Copy failed', err);
-                });
+                    showToast('تم النسخ بنجاح');
+                }).catch(err => console.error('Copy failed', err));
             }
 
-            // دالة تسجيل الخروج
-            function logout() {
-                auth.signOut().then(() => {
-                    showAlert('تم تسجيل الخروج بنجاح.', 'success');
-                    window.location.href = 'index.html'; // توجيه لصفحة الدخول
-                }).catch(error => {
-                    console.error("Logout Error:", error);
-                    showAlert('حدث خطأ أثناء تسجيل الخروج', 'danger');
-                });
-            }
-
-
-            // تحويل الطابع الزمني إلى تنسيق تاريخ ووقت محلي
             function formatTimestamp(timestamp) {
                 if (!timestamp) return 'غير محدد';
                 const date = new Date(timestamp);
-                const formattedDate = date.toLocaleDateString('ar-EG', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                });
-                const formattedTime = date.toLocaleTimeString('ar-EG', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
+                const formattedDate = date.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+                const formattedTime = date.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
                 return `${formattedDate} الساعة ${formattedTime}`;
             }
 
-            // دالة لعرض المستخدمين على الصفحة
             function displayUsers(users) {
                 const usersList = document.getElementById('users-list');
                 usersList.innerHTML = '';
@@ -691,13 +631,15 @@
                         isDisabled = true;
                     }
                     
-                    const deviceId = user.deviceId || 'غير معروف';
+                    const deviceId = user.deviceId ? user.deviceId : 'غير معروف';
                     const userYear = user.year || 'غير محدد';
                     const disableDate = disableTimestamp ? formatTimestamp(disableTimestamp) : 'غير محدد';
                     const userPass = user.password || 'غير معروف';
                     const userPhone = user.phoneNumber || 'غير معروف';
-                    const userCode = user.code || 'غير معروف';
                     const userEmail = user.email || 'غير معروف';
+
+                    const userCodesArray = user.allCodes || [];
+                    const userCodeDisplay = userCodesArray.length > 0 ? userCodesArray.join(' - ') : 'غير متوفر';
 
                     const userCard = document.createElement('div');
                     userCard.className = 'user-card';
@@ -706,40 +648,34 @@
                             <div class="user-email">
                                 البريد الإلكتروني: <span class="copyable" onclick="copyText('${userEmail}')" title="اضغط للنسخ">${userEmail}</span>
                             </div>
-                            <div class="user-detail">معرف الجهاز: ${deviceId}</div>
-                            <div class="user-detail">
-                                السنة الدراسية: <span class="year-display">${userYear}</span>
-                            </div>
-                            <div class="user-detail">
-                                كلمة المرور: <span class="copyable" onclick="copyText('${userPass}')" title="اضغط للنسخ">${userPass}</span>
-                            </div>
-                            <div class="user-detail">
-                                رقم الهاتف: <span class="copyable" onclick="copyText('${userPhone}')" title="اضغط للنسخ">${userPhone}</span>
-                            </div>
-                            <div class="user-detail">
-                                كود التسجيل: <span class="copyable" onclick="copyText('${userCode}')" title="اضغط للنسخ">${userCode}</span>
-                            </div>
-                            <div class="user-detail">
-                                حالة الحساب: <span class="status-${isDisabled ? 'disabled' : 'active'}">
-                                    ${isDisabled ? 'معطل' : 'نشط'}
+                            <div class="user-detail">معرف الجهاز: <span id="device-text-${userId}">${deviceId}</span></div>
+                            <div class="user-detail">السنة الدراسية: <span class="year-display">${userYear}</span></div>
+                            <div class="user-detail">كلمة المرور: <span class="copyable" onclick="copyText('${userPass}')" title="اضغط للنسخ">${userPass}</span></div>
+                            <div class="user-detail">رقم الهاتف: <span class="copyable" onclick="copyText('${userPhone}')" title="اضغط للنسخ">${userPhone}</span></div>
+                            <div class="user-detail">أكواد التسجيل: <span class="copyable" onclick="copyText('${userCodeDisplay}')" title="اضغط للنسخ">${userCodeDisplay}</span></div>
+                            
+                            <div class="user-detail" style="display: flex; align-items: center; margin-top: 10px;">
+                                <span style="margin-left: 10px;">حالة الحساب:</span>
+                                <label class="switch" title="التعطيل يطرد الطالب فوراً">
+                                    <input type="checkbox" id="toggle-${userId}" ${!isDisabled ? 'checked' : ''} onchange="toggleUserStatusDirectly('${userId}', this)">
+                                    <span class="slider"></span>
+                                </label>
+                                <span id="status-text-${userId}" class="status-text ${!isDisabled ? 'text-active' : 'text-disabled'}">
+                                    ${!isDisabled ? 'نشط' : 'معطل'}
                                 </span>
                             </div>
-                            <div class="user-detail">
-                                وقت التعطيل: ${disableDate}
-                            </div>
+
+                            <div class="user-detail">وقت التعطيل: ${disableDate}</div>
                         </div>
                         <div class="user-actions">
-                            <button class="btn btn-warning toggle-status-btn" data-user-id="${userId}" data-current-status="${isDisabled}">
-                                <i class="fas ${isDisabled ? 'fa-unlock' : 'fa-lock'}"></i> ${isDisabled ? 'تفعيل' : 'تعطيل'}
-                            </button>
                             <button class="btn btn-edit edit-user-btn" data-user-id="${userId}">
                                 <i class="fas fa-edit"></i> تعديل
                             </button>
-                            <button class="btn btn-info clear-device-btn" data-user-id="${userId}">
+                            <button class="btn btn-info" onclick="clearDeviceDirectly('${userId}', this)" title="مسح الجهاز للسماح بالدخول">
                                 <i class="fas fa-eraser"></i> تغيير الجهاز
                             </button>
-                            <button class="btn btn-logout-force force-logout-btn" data-user-id="${userId}">
-                                <i class="fas fa-sign-out-alt"></i>
+                            <button class="btn btn-logout-force force-logout-btn" data-user-id="${userId}" title="طرد إجباري من التطبيق">
+                                <i class="fas fa-sign-out-alt"></i> خروج إجباري
                             </button>
                             <button class="btn btn-delete delete-btn" data-user-id="${userId}">
                                 <i class="fas fa-trash"></i>
@@ -751,7 +687,6 @@
                 attachButtonListeners();
             }
 
-            // دالة للتحقق من الحسابات المنتهية وتحديثها
             async function checkAndDisableExpiredAccounts(usersData) {
                 const updates = {};
                 const now = Date.now();
@@ -759,24 +694,18 @@
                     const user = usersData[userId];
                     if (user.disableTimestamp && user.disableTimestamp < now && (user.isDisabled === false || user.isDisabled === undefined)) {
                         updates[`users/${userId}/isDisabled`] = true;
+                        updates[`users/${userId}/deviceId`] = ""; 
                     }
                 }
-
                 if (Object.keys(updates).length > 0) {
-                    try {
-                        await database.ref().update(updates);
-                    } catch (error) {
-                        console.error('Error auto-disabling accounts:', error);
-                    }
+                    try { await database.ref().update(updates); } catch (e) {}
                 }
             }
 
-            // تحميل الأعضاء والأكواد من قاعدة البيانات وتخزينهم
             function loadUsers() {
                 const usersList = document.getElementById('users-list');
                 usersList.innerHTML = '<div style="text-align: center; padding: 20px;"><p>جاري تحميل بيانات الأعضاء...</p></div>';
 
-                // نستخدم Promise.all لجلب المستخدمين والأكواد معاً
                 Promise.all([
                     database.ref('users').once('value'),
                     database.ref('codes').once('value')
@@ -784,37 +713,29 @@
                     let users = usersSnapshot.val() || {};
                     const codes = codesSnapshot.val() || {};
 
-                    // دمج الكود في بيانات المستخدم
-                    for (const [code, codeData] of Object.entries(codes)) {
+                    for (const uid in users) {
+                        users[uid].allCodes = [];
+                        if (users[uid].code) users[uid].allCodes.push(users[uid].code.toString());
+                        if (users[uid].ncode) users[uid].allCodes.push(users[uid].ncode.toString());
+                    }
+
+                    for (const [codeStr, codeData] of Object.entries(codes)) {
                         if (codeData.usedBy && users[codeData.usedBy]) {
-                            users[codeData.usedBy].code = code;
+                            if (!users[codeData.usedBy].allCodes.includes(codeStr)) {
+                                users[codeData.usedBy].allCodes.push(codeStr);
+                            }
                         }
                     }
 
                     allUsersData = users;
                     await checkAndDisableExpiredAccounts(allUsersData);
-                    
-                    // إعادة التحميل للتأكد من التحديثات
-                    database.ref('users').once('value').then((updatedSnapshot) => {
-                        let updatedUsers = updatedSnapshot.val() || {};
-                        // إعادة دمج الأكواد
-                        for (const [code, codeData] of Object.entries(codes)) {
-                            if (codeData.usedBy && updatedUsers[codeData.usedBy]) {
-                                updatedUsers[codeData.usedBy].code = code;
-                            }
-                        }
-                        allUsersData = updatedUsers;
-                        displayUsers(allUsersData);
-                    });
-
+                    filterUsers(); 
                 }).catch(error => {
-                    usersList.innerHTML = '<div style="text-align: center; padding: 20px;"><p>حدث خطأ في تحميل الأعضاء. تأكد من تطبيق قواعد الأمان.</p></div>';
                     console.error('Error loading users:', error);
-                    showAlert('حدث خطأ في تحميل بيانات الأعضاء', 'danger');
+                    showToast('حدث خطأ في تحميل البيانات', 'error');
                 });
             }
 
-            // دالة البحث وتصفية المستخدمين
             function filterUsers() {
                 const searchTerm = document.getElementById('user-search').value.toLowerCase();
                 const filteredUsers = {};
@@ -824,14 +745,14 @@
                     const year = user.year ? user.year.toLowerCase() : '';
                     const phone = user.phoneNumber ? user.phoneNumber.toString() : '';
                     const password = user.password ? user.password.toLowerCase() : '';
-                    const code = user.code ? user.code.toString() : '';
+                    const codeSearchStr = user.allCodes ? user.allCodes.join(' ').toLowerCase() : '';
 
                     if (
                         email.includes(searchTerm) || 
                         year.includes(searchTerm) ||
                         phone.includes(searchTerm) ||
                         password.includes(searchTerm) ||
-                        code.includes(searchTerm)
+                        codeSearchStr.includes(searchTerm)
                     ) {
                         filteredUsers[userId] = user;
                     }
@@ -839,331 +760,261 @@
                 displayUsers(filteredUsers);
             }
 
-            // ... (باقي الدوال المساعدة) ...
+            // --- 1. التعطيل والتفعيل الآمن (بطريقة 3 خطوات للطرد النظيف) ---
+            window.toggleUserStatusDirectly = async function(userId, checkboxElement) {
+                const newIsDisabled = !checkboxElement.checked;
+                checkboxElement.disabled = true; 
+                
+                try {
+                    if (newIsDisabled) {
+                        // حالة التعطيل: تعطيل ثم مسح الجهاز للطرد
+                        await database.ref(`users/${userId}`).update({ isDisabled: true });
+                        await database.ref(`users/${userId}`).update({ deviceId: "" });
+                    } else {
+                        // حالة التفعيل: تأكيد المسح ثم التفعيل
+                        await database.ref(`users/${userId}`).update({ deviceId: "" });
+                        await database.ref(`users/${userId}`).update({ 
+                            isDisabled: false, 
+                            disableTimestamp: null 
+                        });
+                    }
+                    
+                    if (allUsersData[userId]) {
+                        allUsersData[userId].isDisabled = newIsDisabled;
+                        allUsersData[userId].deviceId = "";
+                        if (!newIsDisabled) {
+                            allUsersData[userId].disableTimestamp = null;
+                        }
+                    }
+
+                    const statusText = document.getElementById(`status-text-${userId}`);
+                    if (statusText) {
+                        statusText.textContent = newIsDisabled ? 'معطل' : 'نشط';
+                        statusText.className = `status-text ${newIsDisabled ? 'text-disabled' : 'text-active'}`;
+                    }
+                    
+                    const deviceElem = document.getElementById(`device-text-${userId}`);
+                    if (deviceElem) {
+                        deviceElem.textContent = 'غير معروف';
+                    }
+
+                    showToast(newIsDisabled ? 'تم تعطيل الحساب وطرده إجبارياً' : 'تم تفعيل الحساب وجاهز للدخول');
+                } catch (error) {
+                    checkboxElement.checked = !newIsDisabled; 
+                    showToast('حدث خطأ أثناء التنفيذ', 'error');
+                } finally {
+                    checkboxElement.disabled = false;
+                }
+            };
+
+            // --- 2. تغيير الجهاز (التنفيذ المتتالي لضمان الخروج النظيف بدون خطأ) ---
+            window.clearDeviceDirectly = async function(userId, btnElement) {
+                const originalHtml = btnElement.innerHTML;
+                btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري...';
+                btnElement.disabled = true;
+
+                try {
+                    // الخطوة 1: تعطيل الحساب (عشان التطبيق يعطيك خروج سليم)
+                    await database.ref(`users/${userId}`).update({ isDisabled: true });
+                    
+                    // الخطوة 2: مسح الجهاز (بطريقة "") اللي بتكسر الجلسة
+                    await database.ref(`users/${userId}`).update({ deviceId: "" });
+                    
+                    // الخطوة 3: التفعيل فوراً عشان يقدر يدخل من تاني
+                    await database.ref(`users/${userId}`).update({ 
+                        isDisabled: false, 
+                        disableTimestamp: null 
+                    });
+
+                    if (allUsersData[userId]) {
+                        allUsersData[userId].deviceId = "";
+                        allUsersData[userId].isDisabled = false;
+                        allUsersData[userId].disableTimestamp = null;
+                    }
+
+                    const deviceElem = document.getElementById(`device-text-${userId}`);
+                    if (deviceElem) deviceElem.textContent = 'غير معروف';
+
+                    const toggleElem = document.getElementById(`toggle-${userId}`);
+                    if (toggleElem) toggleElem.checked = true;
+
+                    const statusText = document.getElementById(`status-text-${userId}`);
+                    if (statusText) {
+                        statusText.textContent = 'نشط';
+                        statusText.className = 'status-text text-active';
+                    }
+
+                    showToast('تم إجراء تسجيل الخروج الإجباري وتصفير الجهاز بنجاح');
+                } catch(e) {
+                    showToast('حدث خطأ أثناء تغيير الجهاز', 'error');
+                } finally {
+                    btnElement.innerHTML = originalHtml;
+                    btnElement.disabled = false;
+                }
+            }
+
+            // --- 3. الخروج الإجباري ---
+            function openForceLogoutModal(e) {
+                document.getElementById('force-logout-user-id').value = e.currentTarget.getAttribute('data-user-id');
+                document.getElementById('force-logout-modal').style.display = 'flex';
+            }
+            
+            async function forceLogoutUser() {
+                const userId = document.getElementById('force-logout-user-id').value;
+                const confirmBtn = document.getElementById('confirm-force-logout-btn');
+                confirmBtn.disabled = true;
+                try {
+                    await database.ref(`users/${userId}`).update({ deviceId: "" });
+                    showToast('تم طرد الطالب إجبارياً.');
+                    closeModal('force-logout-modal');
+                    
+                    if (allUsersData[userId]) allUsersData[userId].deviceId = "";
+                    const deviceElem = document.getElementById(`device-text-${userId}`);
+                    if (deviceElem) deviceElem.textContent = 'غير معروف';
+
+                } catch (error) {
+                    showToast('حدث خطأ', 'error');
+                } finally {
+                    confirmBtn.disabled = false;
+                }
+            }
+
+
+            function updateLocalUserAndRefresh(userId, updates) {
+                if (allUsersData[userId]) {
+                    Object.assign(allUsersData[userId], updates);
+                }
+                filterUsers();
+            }
+
             function openEditUserModal(e) {
                 const userId = e.currentTarget.getAttribute('data-user-id');
                 const user = allUsersData[userId];
-                if (!user) {
-                    showAlert('لا يمكن العثور على بيانات المستخدم', 'danger');
-                    return;
-                }
                 document.getElementById('edit-user-id').value = userId;
                 const disableTimestamp = user.disableTimestamp;
                 if (disableTimestamp) {
                     const date = new Date(disableTimestamp);
-                    const localDate = date.toISOString().split('T')[0];
-                    const localTime = date.toTimeString().split(' ')[0].substring(0, 5);
-                    document.getElementById('edit-disable-date').value = localDate;
-                    document.getElementById('edit-disable-time').value = localTime;
+                    document.getElementById('edit-disable-date').value = date.toISOString().split('T')[0];
+                    document.getElementById('edit-disable-time').value = date.toTimeString().split(' ')[0].substring(0, 5);
                 } else {
                     document.getElementById('edit-disable-date').value = '';
                     document.getElementById('edit-disable-time').value = '';
                 }
                 document.getElementById('edit-user-modal').style.display = 'flex';
             }
+            
             async function saveUserEdits() {
                 const userId = document.getElementById('edit-user-id').value;
                 const newDate = document.getElementById('edit-disable-date').value;
                 const newTime = document.getElementById('edit-disable-time').value;
                 const confirmBtn = document.getElementById('confirm-edit-btn');
-                const confirmText = document.getElementById('confirm-edit-text');
-                const confirmLoader = document.getElementById('confirm-edit-loader');
-                confirmText.style.display = 'none';
-                confirmLoader.style.display = 'inline-block';
+                
                 confirmBtn.disabled = true;
                 let disableTimestamp = null;
                 if (newDate && newTime) {
-                    const dateTimeString = `${newDate}T${newTime}:00`;
-                    disableTimestamp = new Date(dateTimeString).getTime();
+                    disableTimestamp = new Date(`${newDate}T${newTime}:00`).getTime();
                 }
                 try {
-                    await database.ref(`users/${userId}`).update({
-                        disableTimestamp: disableTimestamp
-                    });
-                    showAlert('تم تحديث وقت التعطيل بنجاح.', 'success');
+                    await database.ref(`users/${userId}`).update({ disableTimestamp: disableTimestamp });
+                    showToast('تم تحديث الوقت بنجاح');
                     closeModal('edit-user-modal');
-                    loadUsers();
+                    updateLocalUserAndRefresh(userId, { disableTimestamp: disableTimestamp });
                 } catch (error) {
-                    console.error('Error updating disable time:', error);
-                    showAlert('حدث خطأ أثناء تحديث وقت التعطيل.', 'danger');
+                    showToast('حدث خطأ', 'error');
                 } finally {
-                    confirmText.style.display = 'inline-block';
-                    confirmLoader.style.display = 'none';
-                    confirmBtn.disabled = false;
-                }
-            }
-            function openClearDeviceModal(e) {
-                const userId = e.currentTarget.getAttribute('data-user-id');
-                document.getElementById('clear-device-user-id').value = userId;
-                document.getElementById('clear-device-modal').style.display = 'flex';
-            }
-            function openForceLogoutModal(e) {
-                const userId = e.currentTarget.getAttribute('data-user-id');
-                document.getElementById('force-logout-user-id').value = userId;
-                document.getElementById('force-logout-modal').style.display = 'flex';
-            }
-            function openToggleStatusModal(e) {
-                const userId = e.currentTarget.getAttribute('data-user-id');
-                const currentStatus = e.currentTarget.getAttribute('data-current-status') === 'true';
-                document.getElementById('toggle-user-id').value = userId;
-                document.getElementById('current-status').value = currentStatus;
-                const title = document.getElementById('toggle-status-title');
-                const message = document.getElementById('toggle-status-message');
-                if (currentStatus) {
-                    title.textContent = 'تفعيل الحساب';
-                    message.textContent = 'هل أنت متأكد أنك تريد تفعيل هذا الحساب؟';
-                } else {
-                    title.textContent = 'تعطيل الحساب';
-                    message.textContent = 'هل أنت متأكد أنك تريد تعطيل هذا الحساب؟';
-                }
-                document.getElementById('toggle-status-modal').style.display = 'flex';
-            }
-            function openDeleteUserModal(e) {
-                const userId = e.currentTarget.getAttribute('data-user-id');
-                document.getElementById('delete-user-id').value = userId;
-                document.getElementById('delete-user-modal').style.display = 'flex';
-            }
-
-            // ============================================
-            // ======== وظائف "تعطيل الكل" الجديدة ========
-            // ============================================
-            function openDisableAllModal() {
-                document.getElementById('disable-all-modal').style.display = 'flex';
-            }
-
-            async function disableAllUsers() {
-                const confirmBtn = document.getElementById('confirm-disable-all-btn');
-                const confirmText = document.getElementById('confirm-disable-all-text');
-                const confirmLoader = document.getElementById('confirm-disable-all-loader');
-
-                confirmText.style.display = 'none';
-                confirmLoader.style.display = 'inline-block';
-                confirmBtn.disabled = true;
-
-                try {
-                    const updates = {};
-                    // المرور على كل المستخدمين المحملين محلياً
-                    for (const userId in allUsersData) {
-                        // تعيين حالة التعطيل لكل مستخدم
-                        updates[`users/${userId}/isDisabled`] = true;
-                    }
-
-                    if (Object.keys(updates).length > 0) {
-                        // تنفيذ التحديث دفعة واحدة في Firebase
-                        await database.ref().update(updates);
-                        showAlert('تم تعطيل جميع الحسابات بنجاح.', 'success');
-                    } else {
-                        showAlert('لا يوجد مستخدمين لتعطيلهم.', 'warning');
-                    }
-
-                    closeModal('disable-all-modal');
-                    loadUsers(); // تحديث الواجهة
-                } catch (error) {
-                    console.error('Error disabling all users:', error);
-                    showAlert('حدث خطأ أثناء محاولة تعطيل الجميع.', 'danger');
-                } finally {
-                    confirmText.style.display = 'inline-block';
-                    confirmLoader.style.display = 'none';
-                    confirmBtn.disabled = false;
-                }
-            }
-
-            async function clearDeviceId() {
-                const userId = document.getElementById('clear-device-user-id').value;
-                const confirmBtn = document.getElementById('confirm-clear-device-btn');
-                const confirmText = document.getElementById('confirm-clear-device-text');
-                const confirmLoader = document.getElementById('confirm-clear-device-loader');
-                confirmText.style.display = 'none';
-                confirmLoader.style.display = 'inline-block';
-                confirmBtn.disabled = true;
-                try {
-                    await database.ref(`users/${userId}`).update({
-                        deviceId: null
-                    });
-                    showAlert('تم مسح معرف الجهاز بنجاح. يمكن للعضو الآن تسجيل الدخول من جهاز آخر.', 'success');
-                    closeModal('clear-device-modal');
-                    loadUsers();
-                } catch (error) {
-                    console.error('Error clearing device ID:', error);
-                    showAlert('حدث خطأ أثناء مسح معرف الجهاز', 'danger');
-                } finally {
-                    confirmText.style.display = 'inline-block';
-                    confirmLoader.style.display = 'none';
-                    confirmBtn.disabled = false;
-                }
-            }
-            async function forceLogoutUser() {
-                const userId = document.getElementById('force-logout-user-id').value;
-                const confirmBtn = document.getElementById('confirm-force-logout-btn');
-                const confirmText = document.getElementById('confirm-force-logout-text');
-                const confirmLoader = document.getElementById('confirm-force-logout-loader');
-                confirmText.style.display = 'none';
-                confirmLoader.style.display = 'inline-block';
-                confirmBtn.disabled = true;
-                try {
-                    await database.ref(`users/${userId}`).update({
-                        deviceId: null, 
-                    });
-                    showAlert('تم تسجيل خروج العضو بنجاح.', 'success');
-                    closeModal('force-logout-modal');
-                    loadUsers();
-                } catch (error) {
-                    console.error('Error forcing logout:', error);
-                    showAlert('حدث خطأ أثناء تسجيل الخروج الإجباري.', 'danger');
-                } finally {
-                    confirmText.style.display = 'inline-block';
-                    confirmLoader.style.display = 'none';
-                    confirmBtn.disabled = false;
-                }
-            }
-            async function deleteUser() {
-                const userId = document.getElementById('delete-user-id').value;
-                const confirmBtn = document.getElementById('confirm-delete-btn');
-                const confirmText = document.getElementById('confirm-delete-text');
-                const confirmLoader = document.getElementById('confirm-delete-loader');
-                confirmText.style.display = 'none';
-                confirmLoader.style.display = 'inline-block';
-                confirmBtn.disabled = true;
-                try {
-                    await database.ref(`users/${userId}`).remove();
-                    showAlert('تم حذف العضو بنجاح', 'success');
-                    closeModal('delete-user-modal');
-                    loadUsers();
-                } catch (error) {
-                    console.error('Error deleting user:', error);
-                    showAlert('حدث خطأ أثناء حذف الحساب', 'danger');
-                } finally {
-                    confirmText.style.display = 'inline-block';
-                    confirmLoader.style.display = 'none';
-                    confirmBtn.disabled = false;
-                }
-            }
-            async function toggleUserStatus() {
-                const userId = document.getElementById('toggle-user-id').value;
-                const currentStatus = document.getElementById('current-status').value === 'true';
-                const newStatus = !currentStatus;
-                const confirmBtn = document.getElementById('confirm-toggle-btn');
-                const confirmText = document.getElementById('confirm-toggle-text');
-                const confirmLoader = document.getElementById('confirm-toggle-loader');
-                confirmText.style.display = 'none';
-                confirmLoader.style.display = 'inline-block';
-                confirmBtn.disabled = true;
-                try {
-                    const updates = {
-                        isDisabled: newStatus
-                    };
-                    if (!newStatus) {
-                        updates['disableTimestamp'] = null;
-                    }
-                    await database.ref(`users/${userId}`).update(updates);
-                    showAlert(`تم ${newStatus ? 'تعطيل' : 'تفعيل'} الحساب بنجاح.`, 'success');
-                    closeModal('toggle-status-modal');
-                    loadUsers(); 
-                } catch (error) {
-                    console.error('Error toggling user status:', error);
-                    showAlert(`حدث خطأ أثناء ${newStatus ? 'تعطيل' : 'تفعيل'} الحساب.`, 'danger');
-                } finally {
-                    confirmText.style.display = 'inline-block';
-                    confirmLoader.style.display = 'none';
                     confirmBtn.disabled = false;
                 }
             }
             
-            // ============================================
-            // ======== وظائف "إعدادات التواصل" المحدثة ===
-            // ============================================
+            function openDeleteUserModal(e) {
+                document.getElementById('delete-user-id').value = e.currentTarget.getAttribute('data-user-id');
+                document.getElementById('delete-user-modal').style.display = 'flex';
+            }
+
+            async function deleteUser() {
+                const userId = document.getElementById('delete-user-id').value;
+                try {
+                    await database.ref(`users/${userId}`).remove();
+                    showToast('تم حذف العضو');
+                    closeModal('delete-user-modal');
+                    delete allUsersData[userId];
+                    filterUsers();
+                } catch (error) {
+                    showToast('حدث خطأ بالحذف', 'error');
+                }
+            }
+            
+            function openDisableAllModal() { document.getElementById('disable-all-modal').style.display = 'flex'; }
+
+            async function disableAllUsers() {
+                const confirmBtn = document.getElementById('confirm-disable-all-btn');
+                confirmBtn.disabled = true;
+                try {
+                    const updates = {};
+                    for (const userId in allUsersData) {
+                        updates[`users/${userId}/isDisabled`] = true;
+                        updates[`users/${userId}/deviceId`] = ""; 
+                        allUsersData[userId].isDisabled = true;
+                        allUsersData[userId].deviceId = "";
+                    }
+                    if (Object.keys(updates).length > 0) {
+                        await database.ref().update(updates);
+                        showToast('تم تعطيل الجميع وطردهم بنجاح');
+                    }
+                    closeModal('disable-all-modal');
+                    filterUsers(); 
+                } catch (error) {
+                    showToast('حدث خطأ', 'error');
+                } finally {
+                    confirmBtn.disabled = false;
+                }
+            }
+
             async function openSettingsModal() {
                 document.getElementById('settings-modal').style.display = 'flex';
                 try {
-                    // جلب البيانات من مسار contact_links
-                    const snapshot = await database.ref('contact_links').once('value');
-                    const data = snapshot.val() || {};
+                    const data = (await database.ref('contact_links').once('value')).val() || {};
                     document.getElementById('facebook-link').value = data.facebook || '';
                     document.getElementById('whatsapp-number').value = data.whatsapp || '';
-                } catch (error) {
-                    console.error('Error fetching settings:', error);
-                    showAlert('حدث خطأ أثناء جلب الإعدادات.', 'danger');
-                }
+                } catch (error) { }
             }
 
             async function saveSettings() {
                 const fbLink = document.getElementById('facebook-link').value.trim();
                 const waNumber = document.getElementById('whatsapp-number').value.trim();
-                
-                const confirmBtn = document.getElementById('save-settings-btn');
-                const confirmText = document.getElementById('save-settings-text');
-                const confirmLoader = document.getElementById('save-settings-loader');
-                
-                confirmText.style.display = 'none';
-                confirmLoader.style.display = 'inline-block';
-                confirmBtn.disabled = true;
-
                 try {
-                    // التعديل الذكي: استخدام update بـ null للحذف عند ترك الحقل فارغاً
-                    const updates = {
+                    await database.ref('contact_links').update({
                         facebook: fbLink === "" ? null : fbLink,
                         whatsapp: waNumber === "" ? null : waNumber
-                    };
-
-                    await database.ref('contact_links').update(updates);
-                    
-                    showAlert('تم حفظ إعدادات التواصل بنجاح.', 'success');
+                    });
+                    showToast('تم الحفظ');
                     closeModal('settings-modal');
-                } catch (error) {
-                    console.error('Error saving settings:', error);
-                    showAlert('حدث خطأ أثناء الحفظ.', 'danger');
-                } finally {
-                    confirmText.style.display = 'inline-block';
-                    confirmLoader.style.display = 'none';
-                    confirmBtn.disabled = false;
-                }
+                } catch (error) { showToast('خطأ بالحفظ', 'error'); }
             }
 
-            function closeModal(modalId) {
-                const modal = document.getElementById(modalId);
-                modal.style.display = 'none';
-            }
+            function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
+            
             function attachButtonListeners() {
-                document.querySelectorAll('.edit-user-btn').forEach(button => {
-                    button.addEventListener('click', openEditUserModal);
-                });
-                document.querySelectorAll('.clear-device-btn').forEach(button => {
-                    button.addEventListener('click', openClearDeviceModal);
-                });
-                document.querySelectorAll('.force-logout-btn').forEach(button => {
-                    button.addEventListener('click', openForceLogoutModal);
-                });
-                document.querySelectorAll('.delete-btn').forEach(button => {
-                    button.addEventListener('click', openDeleteUserModal);
-                });
-                document.querySelectorAll('.toggle-status-btn').forEach(button => {
-                    button.addEventListener('click', openToggleStatusModal);
-                });
+                document.querySelectorAll('.edit-user-btn').forEach(button => button.addEventListener('click', openEditUserModal));
+                document.querySelectorAll('.force-logout-btn').forEach(button => button.addEventListener('click', openForceLogoutModal));
+                document.querySelectorAll('.delete-btn').forEach(button => button.addEventListener('click', openDeleteUserModal));
             }
             
-            // ربط الأحداث العامة
-            document.getElementById('logout-btn').addEventListener('click', logout);
+            document.getElementById('logout-btn').addEventListener('click', () => {
+                auth.signOut().then(() => window.location.href = 'index.html');
+            });
             document.getElementById('confirm-edit-btn').addEventListener('click', saveUserEdits);
-            document.getElementById('confirm-clear-device-btn').addEventListener('click', clearDeviceId);
             document.getElementById('confirm-force-logout-btn').addEventListener('click', forceLogoutUser);
             document.getElementById('confirm-delete-btn').addEventListener('click', deleteUser);
-            document.getElementById('confirm-toggle-btn').addEventListener('click', toggleUserStatus);
-            
-            // ربط أزرار "تعطيل الكل"
             document.getElementById('disable-all-btn').addEventListener('click', openDisableAllModal);
             document.getElementById('confirm-disable-all-btn').addEventListener('click', disableAllUsers);
-
-            // ربط أزرار "إعدادات التواصل"
             document.getElementById('settings-btn').addEventListener('click', openSettingsModal);
             document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
 
             document.querySelectorAll('.close-modal, .close-modal-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
                     const modalElement = e.target.closest('.modal');
-                    if(modalElement) {
-                        closeModal(modalElement.id);
-                    }
+                    if(modalElement) closeModal(modalElement.id);
                 });
             });
             
@@ -1172,10 +1023,8 @@
                 searchTimeout = setTimeout(filterUsers, 300);
             });
 
-            // بدء تحميل المستخدمين
             loadUsers();
-        
-        } // نهاية دالة initializeAppLogic
+        } 
     </script>
 </body>
 </html>
