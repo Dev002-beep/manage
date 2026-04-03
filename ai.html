@@ -8,28 +8,26 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body { font-family: 'Cairo', sans-serif; background: #f4f6f9; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 900px; margin: 0 auto; display: none; } /* مخفية حتى يتم التحقق من الأدمن */
+        .container { max-width: 900px; margin: 0 auto; display: none; }
         .card { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 25px; }
         h2 { color: #06467A; margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px; }
 
-        /* إعدادات الـ API */
-        .api-section { display: flex; gap: 10px; margin-top: 15px; }
-        .api-section input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; direction: ltr; font-family: monospace; font-size: 15px;}
-        .api-section button { background: #06467A; color: #fff; border: none; padding: 0 25px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .api-section button:hover { background: #043259; }
-        .save-msg { color: #27ae60; font-weight: bold; display: none; margin-top: 10px; font-size: 14px;}
+        .api-section { display: flex; flex-direction: column; gap: 15px; margin-top: 15px; }
+        .input-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .input-group label { width: 250px; font-weight: bold; color: #555; }
+        .input-group input { flex: 1; min-width: 250px; padding: 12px; border: 1px solid #ccc; border-radius: 8px; direction: ltr; font-family: monospace; font-size: 14px;}
+        .save-btn { background: #06467A; color: #fff; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; align-self: flex-end;}
+        .save-btn:hover { background: #043259; }
+        .save-msg { color: #27ae60; font-weight: bold; display: none; margin-top: 10px; font-size: 14px; text-align: left;}
 
-        /* قائمة المدرسين */
         .teacher-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; margin-top: 20px; }
         .teacher-card { background: #f9fbfd; border: 1px solid #e1e8ed; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; flex-wrap: wrap;}
         .teacher-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-color: #06467A; }
         .teacher-name { font-weight: bold; color: #2c3e50; font-size: 16px; flex: 1;}
 
-        /* العداد التنازلي */
         .countdown { font-size: 12px; color: #e74c3c; font-weight: bold; background: #fadbd8; padding: 4px 10px; border-radius: 12px; margin-left: 10px; }
         .unlimited { color: #27ae60; background: #d5f5e3; }
 
-        /* مفتاح التشغيل والإيقاف (Toggle Switch) */
         .switch { position: relative; display: inline-block; width: 48px; height: 26px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 26px; }
@@ -47,13 +45,20 @@
     <div class="container" id="mainContainer">
         
         <div class="card">
-            <h2><i class="fas fa-key"></i> إعدادات مفتاح DeepSeek API</h2>
-            <p style="color: #666; font-size: 14px;">أدخل مفتاح الـ API الخاص بك هنا ليتم تطبيقه على التطبيق بأكمله، ويمكنك تغييره في أي وقت.</p>
+            <h2><i class="fas fa-server"></i> إعدادات السيرفرات (Failover System)</h2>
+            <p style="color: #666; font-size: 14px;">يعمل النظام على السيرفر الأساسي، وإذا وصل للحد الأقصى ينتقل تلقائياً للاحتياطي لضمان عدم توقف البوت نهائياً.</p>
             <div class="api-section">
-                <input type="text" id="apiKeyInput" placeholder="sk-...">
-                <button onclick="saveApiKey()">حفظ المفتاح</button>
+                <div class="input-group">
+                    <label>مفتاح السيرفر الأساسي (Groq):</label>
+                    <input type="text" id="primaryApiKeyInput" placeholder="gsk_...">
+                </div>
+                <div class="input-group">
+                    <label>مفتاح السيرفر الاحتياطي (DeepSeek):</label>
+                    <input type="text" id="backupApiKeyInput" placeholder="sk-...">
+                </div>
+                <button class="save-btn" onclick="saveApiKeys()">حفظ المفاتيح</button>
+                <div id="apiSaveMsg" class="save-msg">تم حفظ المفاتيح بنجاح!</div>
             </div>
-            <div id="apiSaveMsg" class="save-msg">تم حفظ المفتاح في قاعدة البيانات بنجاح!</div>
         </div>
 
         <div class="card">
@@ -90,10 +95,9 @@
 
         let countdownInterval;
 
-        // 🌟 التحقق من أن المستخدم مسجل دخوله وهو أدمن فعلياً 🌟
         auth.onAuthStateChanged(user => {
             if (!user) {
-                window.location.href = 'index.html'; // العودة لصفحة تسجيل الدخول
+                window.location.href = 'index.html'; 
             } else {
                 db.ref(`admins/${user.uid}`).get().then(snap => {
                     if(snap.exists()) {
@@ -108,25 +112,27 @@
             }
         });
 
-        // تشغيل الوظائف الأساسية بعد التأكد من الأدمن
         function initAdminPanel() {
-            // جلب الـ API Key
-            db.ref('settings/deepseek_api_key').once('value').then(snap => {
-                if(snap.exists()) {
-                    document.getElementById('apiKeyInput').value = snap.val();
-                }
+            db.ref('settings/primary_api_key').once('value').then(snap => {
+                if(snap.exists()) document.getElementById('primaryApiKeyInput').value = snap.val();
+            });
+            db.ref('settings/backup_api_key').once('value').then(snap => {
+                if(snap.exists()) document.getElementById('backupApiKeyInput').value = snap.val();
             });
 
-            // جلب المدرسين
             loadTeachersPermissions();
         }
 
-        // حفظ مفتاح الـ API
-        function saveApiKey() {
-            const key = document.getElementById('apiKeyInput').value.trim();
-            if(!key) { alert("الرجاء إدخال المفتاح أولاً"); return; }
+        function saveApiKeys() {
+            const primaryKey = document.getElementById('primaryApiKeyInput').value.trim();
+            const backupKey = document.getElementById('backupApiKeyInput').value.trim();
             
-            db.ref('settings/deepseek_api_key').set(key).then(() => {
+            const updates = {
+                'settings/primary_api_key': primaryKey,
+                'settings/backup_api_key': backupKey
+            };
+
+            db.ref().update(updates).then(() => {
                 const msg = document.getElementById('apiSaveMsg');
                 msg.style.display = 'block';
                 setTimeout(() => msg.style.display = 'none', 3000);
