@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة صلاحيات الذكاء الاصطناعي - AMG</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { font-family: 'Cairo', sans-serif; background: #f4f6f9; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 900px; margin: 0 auto; display: none; } /* مخفية حتى يتم التحقق من الأدمن */
+        .card { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        h2 { color: #06467A; margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+
+        /* إعدادات الـ API */
+        .api-section { display: flex; gap: 10px; margin-top: 15px; }
+        .api-section input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; direction: ltr; font-family: monospace; font-size: 15px;}
+        .api-section button { background: #06467A; color: #fff; border: none; padding: 0 25px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .api-section button:hover { background: #043259; }
+        .save-msg { color: #27ae60; font-weight: bold; display: none; margin-top: 10px; font-size: 14px;}
+
+        /* قائمة المدرسين */
+        .teacher-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; margin-top: 20px; }
+        .teacher-card { background: #f9fbfd; border: 1px solid #e1e8ed; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; flex-wrap: wrap;}
+        .teacher-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-color: #06467A; }
+        .teacher-name { font-weight: bold; color: #2c3e50; font-size: 16px; flex: 1;}
+
+        /* العداد التنازلي */
+        .countdown { font-size: 12px; color: #e74c3c; font-weight: bold; background: #fadbd8; padding: 4px 10px; border-radius: 12px; margin-left: 10px; }
+        .unlimited { color: #27ae60; background: #d5f5e3; }
+
+        /* مفتاح التشغيل والإيقاف (Toggle Switch) */
+        .switch { position: relative; display: inline-block; width: 48px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 26px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        input:checked + .slider { background-color: #27ae60; }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        #loadingMsg { text-align: center; font-weight: bold; color: #06467A; margin-top: 50px; font-size: 20px; }
+    </style>
+</head>
+<body>
+
+    <div id="loadingMsg">جاري التحقق من الصلاحيات... برجاء الانتظار ⏳</div>
+
+    <div class="container" id="mainContainer">
+        
+        <div class="card">
+            <h2><i class="fas fa-key"></i> إعدادات مفتاح DeepSeek API</h2>
+            <p style="color: #666; font-size: 14px;">أدخل مفتاح الـ API الخاص بك هنا ليتم تطبيقه على التطبيق بأكمله، ويمكنك تغييره في أي وقت.</p>
+            <div class="api-section">
+                <input type="text" id="apiKeyInput" placeholder="sk-...">
+                <button onclick="saveApiKey()">حفظ المفتاح</button>
+            </div>
+            <div id="apiSaveMsg" class="save-msg">تم حفظ المفتاح في قاعدة البيانات بنجاح!</div>
+        </div>
+
+        <div class="card">
+            <h2><i class="fas fa-users-cog"></i> صلاحيات تشغيل المساعد الذكي للمدرسين</h2>
+            <p style="color: #666; font-size: 14px;">قم بتفعيل الزر لتحديد وقت صلاحية الذكاء الاصطناعي للمدرس (سيغلق تلقائياً بعد انتهاء الوقت).</p>
+            
+            <div class="teacher-grid" id="teachersContainer">
+                <div style="text-align:center; width:100%; color:#888; font-weight: bold; padding: 20px;">جاري تحميل بيانات المدرسين...</div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: 'AIzaSyCdqYrVFspJ4rZwidfaPtc9PYpNlQQm09k',
+            appId: '1:284879336757:web:1f42836c2382d11b73087c',
+            messagingSenderId: '284879336757',
+            projectId: 'amgg-81ac3',
+            authDomain: 'amgg-81ac3.firebaseapp.com',
+            databaseURL: 'https://amgg-81ac3-default-rtdb.firebaseio.com',
+            storageBucket: 'amgg-81ac3.firebasestorage.app',
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+        const auth = firebase.auth();
+
+        let countdownInterval;
+
+        // 🌟 التحقق من أن المستخدم مسجل دخوله وهو أدمن فعلياً 🌟
+        auth.onAuthStateChanged(user => {
+            if (!user) {
+                window.location.href = 'index.html'; // العودة لصفحة تسجيل الدخول
+            } else {
+                db.ref(`admins/${user.uid}`).get().then(snap => {
+                    if(snap.exists()) {
+                        document.getElementById('loadingMsg').style.display = 'none';
+                        document.getElementById('mainContainer').style.display = 'block';
+                        initAdminPanel();
+                    } else {
+                        alert("عفواً، هذه الصفحة مخصصة للمدير (الأدمن) فقط.");
+                        auth.signOut().then(() => window.location.href = 'index.html');
+                    }
+                });
+            }
+        });
+
+        // تشغيل الوظائف الأساسية بعد التأكد من الأدمن
+        function initAdminPanel() {
+            // جلب الـ API Key
+            db.ref('settings/deepseek_api_key').once('value').then(snap => {
+                if(snap.exists()) {
+                    document.getElementById('apiKeyInput').value = snap.val();
+                }
+            });
+
+            // جلب المدرسين
+            loadTeachersPermissions();
+        }
+
+        // حفظ مفتاح الـ API
+        function saveApiKey() {
+            const key = document.getElementById('apiKeyInput').value.trim();
+            if(!key) { alert("الرجاء إدخال المفتاح أولاً"); return; }
+            
+            db.ref('settings/deepseek_api_key').set(key).then(() => {
+                const msg = document.getElementById('apiSaveMsg');
+                msg.style.display = 'block';
+                setTimeout(() => msg.style.display = 'none', 3000);
+            }).catch(e => alert("حدث خطأ أثناء الحفظ: " + e.message));
+        }
+
+        function loadTeachersPermissions() {
+            const container = document.getElementById('teachersContainer');
+
+            db.ref('settings/bot_access').on('value', snap => {
+                const permissions = snap.val() || {};
+                container.innerHTML = ''; 
+                
+                if(countdownInterval) clearInterval(countdownInterval);
+
+                for (let i = 1; i <= 25; i++) {
+                    const teacherName = `مدرس ${i}`;
+                    const rawData = permissions[teacherName];
+                    
+                    let hasAccess = false;
+                    let expireAt = null;
+
+                    if (typeof rawData === 'boolean') {
+                        hasAccess = rawData;
+                    } else if (rawData) {
+                        hasAccess = rawData.active === true;
+                        expireAt = rawData.expireAt;
+                    }
+
+                    if (hasAccess && expireAt && Date.now() > expireAt) {
+                        hasAccess = false;
+                        db.ref(`settings/bot_access/${teacherName}`).set({active: false, expireAt: null});
+                    }
+
+                    const card = document.createElement('div');
+                    card.className = 'teacher-card';
+                    
+                    let timerHtml = `<span class="countdown" id="timer-${i}" style="display: ${hasAccess && expireAt ? 'inline-block' : 'none'}"></span>`;
+                    let unlimitedHtml = `<span class="countdown unlimited" id="unlimited-${i}" style="display: ${hasAccess && !expireAt ? 'inline-block' : 'none'}">دائم المفعول</span>`;
+
+                    card.innerHTML = `
+                        <span class="teacher-name"><i class="fas fa-chalkboard-teacher" style="color: #06467A; margin-left: 8px;"></i> ${teacherName}</span>
+                        ${timerHtml}
+                        ${unlimitedHtml}
+                        <label class="switch">
+                            <input type="checkbox" onchange="updatePermission('${teacherName}', this.checked)" ${hasAccess ? 'checked' : ''}>
+                            <span class="slider round"></span>
+                        </label>
+                    `;
+                    container.appendChild(card);
+                }
+
+                countdownInterval = setInterval(() => updateTimers(permissions), 1000);
+                updateTimers(permissions);
+            });
+        }
+
+        function updateTimers(permissions) {
+            const now = Date.now();
+            for (let i = 1; i <= 25; i++) {
+                const teacherName = `مدرس ${i}`;
+                const data = permissions[teacherName];
+                
+                if (data && data.active && data.expireAt) {
+                    const timeLeft = data.expireAt - now;
+                    const timerEl = document.getElementById(`timer-${i}`);
+                    
+                    if (timeLeft <= 0) {
+                        if(timerEl) timerEl.innerText = "انتهى الوقت";
+                    } else {
+                        const h = Math.floor(timeLeft / (1000 * 60 * 60));
+                        const m = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                        const s = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                        if(timerEl) timerEl.innerText = `⏳ ${h}س و ${m}د و ${s}ث`;
+                    }
+                }
+            }
+        }
+
+        function updatePermission(teacherName, isGranted) {
+            if (isGranted) {
+                let hours = prompt(`كم ساعة تريد تفعيل البوت لـ (${teacherName})؟\n(اكتب الرقم فقط، أو اتركه فارغاً ليعمل بشكل دائم)`, "24");
+                
+                if (hours === null) {
+                    loadTeachersPermissions(); 
+                    return;
+                }
+
+                let expireAt = null;
+                if (hours.trim() !== "") {
+                    let h = parseFloat(hours);
+                    if (!isNaN(h) && h > 0) {
+                        expireAt = Date.now() + (h * 3600 * 1000); 
+                    }
+                }
+
+                db.ref(`settings/bot_access/${teacherName}`).set({
+                    active: true,
+                    expireAt: expireAt
+                });
+            } else {
+                db.ref(`settings/bot_access/${teacherName}`).set({
+                    active: false,
+                    expireAt: null
+                });
+            }
+        }
+    </script>
+</body>
+</html>
