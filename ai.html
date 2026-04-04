@@ -204,15 +204,14 @@
 
         <div class="card">
             <h2><i class="fas fa-server"></i> إعدادات السيرفرات (Failover System)</h2>
-            <p style="color: #666; font-size: 14px;">يعمل النظام على السيرفر الأول، وإذا وصل للحد الأقصى ينتقل لـ
-                Gemini، ثم للاحتياطي الأخير لضمان عدم توقف البوت.</p>
+            <p style="color: #666; font-size: 14px;">يعمل البوت على سيرفر Groq كأساسي للردود النصية، ويستخدم Gemini للإجابة الشاملة في حالة إرسال صور، وفي حال توقف Groq يعتمد على DeepSeek كاحتياطي.</p>
             <div class="api-section">
                 <div class="input-group">
                     <label>مفتاح السيرفر الأول (Groq):</label>
                     <input type="text" id="primaryApiKeyInput" placeholder="gsk_...">
                 </div>
                 <div class="input-group">
-                    <label>مفتاح السيرفر الثاني (Gemini):</label>
+                    <label>مفتاح تحليل الصور (Gemini API):</label>
                     <input type="text" id="geminiApiKeyInput" placeholder="AIza...">
                 </div>
                 <div class="input-group">
@@ -282,7 +281,13 @@
                 if (snap.exists()) document.getElementById('primaryApiKeyInput').value = snap.val();
             });
             db.ref('settings/gemini_api_key').once('value').then(snap => {
-                if (snap.exists()) document.getElementById('geminiApiKeyInput').value = snap.val();
+                if (snap.exists() && snap.val()) {
+                    document.getElementById('geminiApiKeyInput').value = snap.val();
+                } else {
+                    db.ref('settings/vision_api_key').once('value').then(vSnap => {
+                        if (vSnap.exists()) document.getElementById('geminiApiKeyInput').value = vSnap.val();
+                    });
+                }
             });
             db.ref('settings/backup_api_key').once('value').then(snap => {
                 if (snap.exists()) document.getElementById('backupApiKeyInput').value = snap.val();
@@ -299,6 +304,7 @@
             const updates = {
                 'settings/primary_api_key': primaryKey,
                 'settings/gemini_api_key': geminiKey,
+                'settings/vision_api_key': geminiKey, // لضمان التوافق مع القديم
                 'settings/backup_api_key': backupKey
             };
 
