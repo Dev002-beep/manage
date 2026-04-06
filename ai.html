@@ -186,12 +186,98 @@
             transform: translateX(22px);
         }
 
+        .model-toggles {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+            background: #fff;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            width: 100%;
+            justify-content: space-around;
+        }
+
+        .model-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 13px;
+            font-weight: bold;
+            color: #555;
+            cursor: pointer;
+        }
+
+        .model-item input {
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+        }
+
+        .model-item.q { color: #06467A; }
+        .model-item.g { color: #d35400; }
+        .model-item.d { color: #27ae60; }
+
         #loadingMsg {
             text-align: center;
             font-weight: bold;
             color: #06467A;
             margin-top: 50px;
             font-size: 20px;
+        }
+
+        /* Watermark Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80%;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .close-modal {
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #888;
+        }
+
+        .watermark-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: 0.2s;
+        }
+
+        .watermark-item:hover {
+            background: #f8f9fa;
         }
     </style>
 </head>
@@ -204,21 +290,25 @@
 
         <div class="card">
             <h2><i class="fas fa-server"></i> إعدادات السيرفرات (Failover System)</h2>
-            <p style="color: #666; font-size: 14px;">يعمل البوت على سيرفر Groq كأساسي للردود النصية، ويستخدم Gemini للإجابة الشاملة في حالة إرسال صور، وفي حال توقف Groq يعتمد على DeepSeek كاحتياطي.</p>
+            <p style="color: #666; font-size: 14px;">يعمل النظام على السيرفر الأول، وإذا وصل للحد الأقصى ينتقل لـ
+                Gemini، ثم للاحتياطي الأخير لضمان عدم توقف البوت.</p>
             <div class="api-section">
                 <div class="input-group">
                     <label>مفتاح السيرفر الأول (Groq):</label>
                     <input type="text" id="primaryApiKeyInput" placeholder="gsk_...">
                 </div>
                 <div class="input-group">
-                    <label>مفتاح تحليل الصور (Gemini API):</label>
+                    <label>مفتاح السيرفر الثاني (Gemini):</label>
                     <input type="text" id="geminiApiKeyInput" placeholder="AIza...">
                 </div>
                 <div class="input-group">
                     <label>مفتاح السيرفر الثالث (DeepSeek):</label>
                     <input type="text" id="backupApiKeyInput" placeholder="sk-...">
                 </div>
-                <button class="save-btn" onclick="saveApiKeys()">حفظ المفاتيح</button>
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button class="save-btn" style="margin-top: 0; flex: 1;" onclick="saveApiKeys()">حفظ المفاتيح 💾</button>
+                    <button class="save-btn" style="margin-top: 0; background: #e67e22; flex: 1;" onclick="openWatermarkModal()">إعدادات العلامة المائية 🎥</button>
+                </div>
                 <div id="apiSaveMsg" class="save-msg">تم حفظ المفاتيح بنجاح!</div>
             </div>
         </div>
@@ -234,6 +324,20 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- Modal لإعدادات العلامة المائية -->
+    <div id="watermarkModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="margin:0; color: #06467A;"><i class="fas fa-id-badge"></i> تفعيل الإيميل المائي (Watermark)</h3>
+                <span class="close-modal" onclick="closeWatermarkModal()">&times;</span>
+            </div>
+            <p style="font-size: 13px; color: #666; margin-bottom: 20px;">حدد المدرسين الذين يريد ظهور إيميل الطالب فوق فيديوهاتهم (لحماية الحقوق).</p>
+            <div id="watermarkTeachersList">
+                <!-- هيتملي بالجافا سكريبت -->
+            </div>
+        </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
@@ -281,13 +385,7 @@
                 if (snap.exists()) document.getElementById('primaryApiKeyInput').value = snap.val();
             });
             db.ref('settings/gemini_api_key').once('value').then(snap => {
-                if (snap.exists() && snap.val()) {
-                    document.getElementById('geminiApiKeyInput').value = snap.val();
-                } else {
-                    db.ref('settings/vision_api_key').once('value').then(vSnap => {
-                        if (vSnap.exists()) document.getElementById('geminiApiKeyInput').value = vSnap.val();
-                    });
-                }
+                if (snap.exists()) document.getElementById('geminiApiKeyInput').value = snap.val();
             });
             db.ref('settings/backup_api_key').once('value').then(snap => {
                 if (snap.exists()) document.getElementById('backupApiKeyInput').value = snap.val();
@@ -304,7 +402,6 @@
             const updates = {
                 'settings/primary_api_key': primaryKey,
                 'settings/gemini_api_key': geminiKey,
-                'settings/vision_api_key': geminiKey, // لضمان التوافق مع القديم
                 'settings/backup_api_key': backupKey
             };
 
@@ -345,18 +442,35 @@
 
                     const card = document.createElement('div');
                     card.className = 'teacher-card';
+                    card.style.flexDirection = 'column';
+                    card.style.alignItems = 'flex-start';
+                    card.style.gap = '8px';
 
                     let timerHtml = `<span class="countdown" id="timer-${i}" style="display: ${hasAccess && expireAt ? 'inline-block' : 'none'}"></span>`;
                     let unlimitedHtml = `<span class="countdown unlimited" id="unlimited-${i}" style="display: ${hasAccess && !expireAt ? 'inline-block' : 'none'}">دائم المفعول</span>`;
 
+                    // جلب حالات الموديلات (الافتراضي مفعل إذا كان المدرس مفعلاً أصلاً)
+                    const allowGroq = rawData && rawData.allowGroq !== undefined ? rawData.allowGroq : hasAccess;
+                    const allowGemini = rawData && rawData.allowGemini !== undefined ? rawData.allowGemini : hasAccess;
+                    const allowDeepSeek = rawData && rawData.allowDeepSeek !== undefined ? rawData.allowDeepSeek : hasAccess;
+
                     card.innerHTML = `
-                        <span class="teacher-name"><i class="fas fa-chalkboard-teacher" style="color: #06467A; margin-left: 8px;"></i> ${teacherName}</span>
-                        ${timerHtml}
-                        ${unlimitedHtml}
-                        <label class="switch">
-                            <input type="checkbox" onchange="updatePermission('${teacherName}', this.checked)" ${hasAccess ? 'checked' : ''}>
-                            <span class="slider round"></span>
-                        </label>
+                        <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                            <span class="teacher-name"><i class="fas fa-chalkboard-teacher" style="color: #06467A; margin-left: 8px;"></i> ${teacherName}</span>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                ${timerHtml}
+                                ${unlimitedHtml}
+                                <label class="switch">
+                                    <input type="checkbox" onchange="updatePermission('${teacherName}', this.checked)" ${hasAccess ? 'checked' : ''}>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="model-toggles" style="display: ${hasAccess ? 'flex' : 'none'}">
+                            <label class="model-item q"><input type="checkbox" onchange="toggleModel('${teacherName}', 'allowGroq', this.checked)" ${allowGroq ? 'checked' : ''}> جروك (Q)</label>
+                            <label class="model-item g"><input type="checkbox" onchange="toggleModel('${teacherName}', 'allowGemini', this.checked)" ${allowGemini ? 'checked' : ''}> جيميناي (G)</label>
+                            <label class="model-item d"><input type="checkbox" onchange="toggleModel('${teacherName}', 'allowDeepSeek', this.checked)" ${allowDeepSeek ? 'checked' : ''}> ديب سيك (D)</label>
+                        </div>
                     `;
                     container.appendChild(card);
                 }
@@ -407,15 +521,82 @@
 
                 db.ref(`settings/bot_access/${teacherName}`).set({
                     active: true,
-                    expireAt: expireAt
+                    expireAt: expireAt,
+                    allowGroq: true,
+                    allowGemini: true,
+                    allowDeepSeek: true
                 });
             } else {
                 db.ref(`settings/bot_access/${teacherName}`).set({
                     active: false,
-                    expireAt: null
+                    expireAt: null,
+                    allowGroq: false,
+                    allowGemini: false,
+                    allowDeepSeek: false
                 });
             }
         }
+
+        function toggleModel(teacherName, modelKey, isEnabled) {
+            db.ref(`settings/bot_access/${teacherName}/${modelKey}`).set(isEnabled);
+        }
+
+        function openWatermarkModal() {
+            const modal = document.getElementById('watermarkModal');
+            const list = document.getElementById('watermarkTeachersList');
+            list.innerHTML = '<p style="text-align:center;">جاري التحميل...</p>';
+            modal.style.display = "block";
+
+            db.ref('settings/bot_access').once('value').then(snap => {
+                const data = snap.val() || {};
+                list.innerHTML = '';
+                for (let i = 1; i <= 25; i++) {
+                    const teacherName = `مدرس ${i}`;
+                    const showWatermark = data[teacherName]?.showWatermark !== false; // افتراضياً نعم لحماية المدرسين
+
+                    const item = document.createElement('div');
+                    item.className = 'watermark-item';
+                    item.innerHTML = `
+                        <span style="font-weight:bold;">${teacherName}</span>
+                        <label class="switch">
+                            <input type="checkbox" onchange="toggleWatermark('${teacherName}', this.checked)" ${showWatermark ? 'checked' : ''}>
+                            <span class="slider round"></span>
+                        </label>
+                    `;
+                    list.appendChild(item);
+                }
+            });
+        }
+
+        function closeWatermarkModal() {
+            document.getElementById('watermarkModal').style.display = "none";
+        }
+
+        function toggleWatermark(teacherName, isEnabled) {
+            db.ref(`settings/bot_access/${teacherName}/showWatermark`).set(isEnabled);
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('watermarkModal');
+            if (event.target == modal) closeWatermarkModal();
+        }
+
+/* 
+        // ============================================================
+        // 🤖 محرك الذكاء الاصطناعي التلقائي (تم إيقافه لصالح محرك التطبيق المدمج)
+        // ============================================================
+        let PRIMARY_KEY = "";
+        ...
+        // مراقبة جميع السيرفرات المفعلة تلقائياً
+        db.ref('settings/bot_access').on('value', snap => {
+...
+        });
+
+        // فحص دوري لانتهاء الوقت
+        setInterval(() => {
+...
+        }, 5000);
+*/
     </script>
 </body>
 
