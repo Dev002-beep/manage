@@ -487,6 +487,30 @@
             </div>
         </div>
 
+        <div class="modal" id="change-password-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">تغيير كلمة السر</h3>
+                    <span class="close-modal">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <p style="margin-bottom: 15px; font-weight: bold;">تغيير كلمة السر للمستخدم: <span id="change-password-email-display" style="color: var(--primary-color);"></span></p>
+                    <div class="form-group">
+                        <label for="new-user-password">كلمة المرور الجديدة</label>
+                        <input type="password" id="new-user-password" class="form-control" placeholder="أدخل 6 أحرف على الأقل...">
+                    </div>
+                    <input type="hidden" id="change-password-user-id">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary close-modal-btn">إلغاء</button>
+                    <button type="button" class="btn btn-primary" id="confirm-change-password-btn">
+                        <span id="confirm-change-password-text">تغيير كلمة السر</span>
+                        <span id="confirm-change-password-loader" class="loading" style="display: none;"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div class="modal" id="disable-all-modal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -543,6 +567,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-functions-compat.js"></script>
 
     <script>
         document.addEventListener('contextmenu', event => event.preventDefault());
@@ -567,16 +592,30 @@
         const auth = firebase.auth();
         const database = firebase.database();
 
+        let userRole = ''; // 'admin' or 'tea'
+        let allowedTeachers = []; // list of teachers if role is 'tea'
+
         auth.onAuthStateChanged(user => {
             if (user) {
-                database.ref(`admins/${user.uid}`).once('value', snapshot => {
-                    if (snapshot.exists()) {
+                database.ref(`admins/${user.uid}`).once('value', adminSnapshot => {
+                    if (adminSnapshot.exists()) {
+                        userRole = 'admin';
                         document.getElementById('page-content').style.display = 'block';
                         initializeAppLogic(); 
                     } else {
-                        alert('ليس لديك صلاحيات الوصول لهذه الصفحة.');
-                        auth.signOut();
-                        window.location.href = 'index.html';
+                        database.ref(`tea/${user.uid}`).once('value', teaSnapshot => {
+                            if (teaSnapshot.exists()) {
+                                userRole = 'tea';
+                                const teaVal = teaSnapshot.val() || '';
+                                allowedTeachers = teaVal.split('.').map(s => s.trim()).filter(s => s !== '');
+                                document.getElementById('page-content').style.display = 'block';
+                                initializeAppLogic(); 
+                            } else {
+                                alert('ليس لديك صلاحيات الوصول لهذه الصفحة.');
+                                auth.signOut();
+                                window.location.href = 'index.html';
+                            }
+                        });
                     }
                 });
             } else {
@@ -586,6 +625,23 @@
 
         function initializeAppLogic() {
         
+            if (userRole === 'tea') {
+                const adminOnlySelectors = [
+                    'a[href="add.t.html"]',
+                    'a[href="active.html"]',
+                    'a[href="dashboard.html"]',
+                    'a[href="manage_monthes.html"]',
+                    'a[href="make code.html"]',
+                    'a[href="ai.html"]',
+                    '#settings-btn',
+                    '#disable-all-btn'
+                ];
+                adminOnlySelectors.forEach(selector => {
+                    const elem = document.querySelector(selector);
+                    if (elem) elem.style.display = 'none';
+                });
+            }
+
             let allUsersData = {};
             let searchTimeout;
 
@@ -676,6 +732,9 @@
                             <div class="user-detail">وقت التعطيل: ${disableDate}</div>
                         </div>
                         <div class="user-actions">
+                            <button class="btn btn-primary change-password-btn" data-user-id="${userId}" data-user-email="${userEmail}" title="تغيير كلمة السر">
+                                <i class="fas fa-key"></i> كلمة السر
+                            </button>
                             <button class="btn btn-edit edit-user-btn" data-user-id="${userId}">
                                 <i class="fas fa-edit"></i> تعديل
                             </button>
@@ -749,6 +808,14 @@
                 const filteredUsers = {};
                 for (const userId in allUsersData) {
                     const user = allUsersData[userId];
+                    
+                    if (userRole === 'tea') {
+                        const userYear = user.year || '';
+                        if (!allowedTeachers.includes(userYear)) {
+                            continue;
+                        }
+                    }
+
                     const email = user.email ? user.email.toLowerCase() : '';
                     const year = user.year ? user.year.toLowerCase() : '';
                     const phone = user.phoneNumber ? user.phoneNumber.toString() : '';
@@ -1002,10 +1069,61 @@
 
             function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
             
+            function openChangePasswordModal(e) {
+                const userId = e.currentTarget.getAttribute('data-user-id');
+                const userEmail = e.currentTarget.getAttribute('data-user-email');
+                document.getElementById('change-password-user-id').value = userId;
+                document.getElementById('change-password-email-display').textContent = userEmail;
+                document.getElementById('new-user-password').value = '';
+                document.getElementById('change-password-modal').style.display = 'flex';
+            }
+
+            async function saveUserPassword() {
+                const userId = document.getElementById('change-password-user-id').value;
+                const newPassword = document.getElementById('new-user-password').value.trim();
+                const confirmBtn = document.getElementById('confirm-change-password-btn');
+                const loader = document.getElementById('confirm-change-password-loader');
+                const btnText = document.getElementById('confirm-change-password-text');
+
+                if (newPassword.length < 6) {
+                    showToast('يجب أن تكون كلمة المرور 6 أحرف أو أكثر', 'error');
+                    return;
+                }
+
+                confirmBtn.disabled = true;
+                btnText.style.display = 'none';
+                loader.style.display = 'inline-block';
+
+                try {
+                    const changePasswordFn = firebase.app().functions('us-central1').httpsCallable('secureChangePassword');
+                    const result = await changePasswordFn({ targetUid: userId, newPassword: newPassword });
+                    
+                    if (result.data && result.data.success) {
+                        showToast('تم تغيير كلمة المرور بنجاح');
+                        closeModal('change-password-modal');
+                        
+                        if (allUsersData[userId]) {
+                            allUsersData[userId].password = newPassword;
+                        }
+                        filterUsers();
+                    } else {
+                        showToast('فشل تغيير كلمة المرور', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error changing password:', error);
+                    showToast(error.message || 'حدث خطأ أثناء تغيير كلمة المرور', 'error');
+                } finally {
+                    confirmBtn.disabled = false;
+                    btnText.style.display = 'inline-block';
+                    loader.style.display = 'none';
+                }
+            }
+
             function attachButtonListeners() {
                 document.querySelectorAll('.edit-user-btn').forEach(button => button.addEventListener('click', openEditUserModal));
                 document.querySelectorAll('.force-logout-btn').forEach(button => button.addEventListener('click', openForceLogoutModal));
                 document.querySelectorAll('.delete-btn').forEach(button => button.addEventListener('click', openDeleteUserModal));
+                document.querySelectorAll('.change-password-btn').forEach(button => button.addEventListener('click', openChangePasswordModal));
             }
             
             document.getElementById('logout-btn').addEventListener('click', () => {
@@ -1014,6 +1132,7 @@
             document.getElementById('confirm-edit-btn').addEventListener('click', saveUserEdits);
             document.getElementById('confirm-force-logout-btn').addEventListener('click', forceLogoutUser);
             document.getElementById('confirm-delete-btn').addEventListener('click', deleteUser);
+            document.getElementById('confirm-change-password-btn').addEventListener('click', saveUserPassword);
             document.getElementById('disable-all-btn').addEventListener('click', openDisableAllModal);
             document.getElementById('confirm-disable-all-btn').addEventListener('click', disableAllUsers);
             document.getElementById('settings-btn').addEventListener('click', openSettingsModal);
