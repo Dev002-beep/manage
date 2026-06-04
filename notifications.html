@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>إرسال الإشعارات | AMG</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #6C5CE7;
+            --secondary-color: #A29BFE;
+            --dark-color: #2D3436;
+            --light-color: #F5F6FA;
+            --accent-color: #00CE9F;
+            --danger-color: #E74C3C;
+            --warning-color: #F1C40F;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+        }
+        body {
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            padding-bottom: 50px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 0;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding: 0 20px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .header-btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .header-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        /* Grid Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 992px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 2px solid var(--light-color);
+            padding-bottom: 10px;
+        }
+        
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: 'Tajawal', sans-serif;
+            transition: border-color 0.3s;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        /* Preview Card */
+        .preview-container {
+            border: 1px dashed var(--secondary-color);
+            border-radius: 10px;
+            padding: 15px;
+            background-color: var(--light-color);
+            margin-top: 15px;
+        }
+        .preview-header {
+            font-weight: bold;
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .preview-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        .preview-body {
+            font-size: 14px;
+            color: #555;
+        }
+        .preview-image {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
+            object-fit: cover;
+        }
+
+        /* Checkbox Lists */
+        .grid-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 5px;
+            border: 1px solid var(--light-color);
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .grid-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background-color: var(--light-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            user-select: none;
+        }
+        .grid-item:hover {
+            border-color: var(--secondary-color);
+        }
+        .grid-item input {
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+        }
+        .grid-item span {
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        /* Students Checkbox List */
+        .students-container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        .search-bar {
+            position: relative;
+            margin-bottom: 10px;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 10px 35px 10px 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .search-bar i {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+        }
+        .student-list {
+            max-height: 250px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-right: 5px;
+        }
+        .student-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background-color: var(--light-color);
+            border-radius: 8px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .student-details {
+            flex-grow: 1;
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        .student-name {
+            font-weight: bold;
+        }
+        .student-meta {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .select-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .select-btn {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: white;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .select-btn:hover {
+            background-color: var(--light-color);
+            border-color: #bbb;
+        }
+
+        /* Send Button */
+        .btn-send {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--accent-color);
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 6px rgba(0, 206, 159, 0.2);
+        }
+        .btn-send:hover:not(:disabled) {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 206, 159, 0.3);
+        }
+        .btn-send:disabled {
+            background-color: #ccc;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast Alert */
+        #toast {
+            visibility: hidden;
+            min-width: 280px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 15px 20px;
+            position: fixed;
+            z-index: 9999;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-size: 15px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        #toast.show {
+            visibility: visible;
+            animation: fadein 0.4s, fadeout 0.4s 2.6s;
+        }
+        @keyframes fadein {
+            from {bottom: 0; opacity: 0;} 
+            to {bottom: 30px; opacity: 1;}
+        }
+        @keyframes fadeout {
+            from {bottom: 30px; opacity: 1;} 
+            to {bottom: 0; opacity: 0;}
+        }
+    </style>
+</head>
+<body>
+
+    <div id="page-content" style="display: none;">
+        <header>
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-bell"></i>
+                    <span>نظام الإشعارات المخصصة</span>
+                </div>
+                <div class="header-buttons">
+                    <a href="admin.html" class="header-btn" id="back-btn">
+                        <i class="fas fa-arrow-right"></i> لوحة التحكم
+                    </a>
+                    <button class="header-btn" id="logout-btn" style="background-color: var(--danger-color);">
+                        <i class="fas fa-sign-out-alt"></i> تسجيل خروج
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="container">
+            <div class="dashboard-grid">
+                
+                <!-- Left Side: Compose Notification -->
+                <div class="composer-column">
+                    <div class="card">
+                        <div class="card-title">
+                            <i class="fas fa-pen-fancy"></i> إنشاء محتوى الإشعار
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="notif-title">عنوان الإشعار</label>
+                            <input type="text" id="notif-title" class="form-control" placeholder="أدخل عنوان الإشعار المشوق هنا..." oninput="updatePreview()">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="notif-body">نص الإشعار</label>
+                            <textarea id="notif-body" class="form-control" placeholder="اكتب تفاصيل الإشعار هنا..." oninput="updatePreview()"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="notif-image">رابط الصورة (اختياري)</label>
+                            <input type="url" id="notif-image" class="form-control" placeholder="https://example.com/image.jpg" oninput="updatePreview()">
+                        </div>
+
+                        <div class="preview-container">
+                            <div class="preview-header">
+                                <span>معاينة شكل الإشعار على الهاتف</span>
+                                <i class="fab fa-android" style="color: #A4C639;"></i>
+                            </div>
+                            <div class="preview-title" id="preview-title-text">عنوان الإشعار</div>
+                            <div class="preview-body" id="preview-body-text">تفاصيل ومحتوى الرسالة التي ستصل للطلاب...</div>
+                            <img src="" id="preview-img" class="preview-image" alt="Notification Image">
+                        </div>
+                    </div>
+
+                    <button class="btn-send" id="send-btn" onclick="sendNotification()">
+                        <span id="send-btn-text"><i class="fas fa-paper-plane"></i> إرسال الإشعار الآن</span>
+                        <div class="loading-spinner" id="send-spinner"></div>
+                    </button>
+                </div>
+
+                <!-- Right Side: Targeting Controls -->
+                <div class="targeting-column">
+                    
+                    <!-- Target 1: Teachers -->
+                    <div class="card">
+                        <div class="card-title">
+                            <i class="fas fa-chalkboard-teacher"></i> الخطوة 1: تحديد المدرسين (المراحل)
+                        </div>
+                        <div class="select-actions" id="teachers-select-actions">
+                            <button class="select-btn" onclick="selectAllTeachers(true)">تحديد الكل</button>
+                            <button class="select-btn" onclick="selectAllTeachers(false)">إلغاء التحديد</button>
+                        </div>
+                        <div class="grid-list" id="teachers-list-container">
+                            <!-- Teachers rendered dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Target 2: Months -->
+                    <div class="card">
+                        <div class="card-title">
+                            <i class="fas fa-calendar-alt"></i> الخطوة 2: الفلترة بحسب شهور معينة (اختياري)
+                        </div>
+                        <div class="select-actions">
+                            <button class="select-btn" onclick="selectAllMonths(true)">تحديد الكل</button>
+                            <button class="select-btn" onclick="selectAllMonths(false)">إلغاء التحديد</button>
+                        </div>
+                        <div class="grid-list" id="months-list-container">
+                            <div style="grid-column: 1 / -1; text-align: center; color: #888; padding: 10px;">
+                                الرجاء اختيار مدرس أولاً لعرض الشهور المتاحة.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Target 3: Students -->
+                    <div class="card">
+                        <div class="card-title">
+                            <i class="fas fa-user-graduate"></i> الخطوة 3: تحديد طلاب معينين بالاسم (اختياري)
+                        </div>
+                        
+                        <div class="select-actions">
+                            <button class="select-btn" id="students-select-all" onclick="selectAllStudents(true)">تحديد جميع المعروضين</button>
+                            <button class="select-btn" id="students-clear-all" onclick="selectAllStudents(false)">إلغاء تحديد الجميع</button>
+                        </div>
+
+                        <div class="search-bar">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="student-search" placeholder="ابحث بالاسم، الكود، أو رقم الهاتف..." oninput="filterStudentsList()">
+                        </div>
+
+                        <div class="students-container">
+                            <div class="student-list" id="students-list-container">
+                                <div style="text-align: center; color: #888; padding: 20px;">
+                                    الرجاء اختيار مدرس أولاً لعرض قائمة الطلاب.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Alert -->
+    <div id="toast">
+        <i class="fas fa-check-circle" id="toast-icon"></i> 
+        <span id="toast-msg"></span>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-functions-compat.js"></script>
+
+    <script>
+        // Helper to normalize strings (Arabic digits, spacing, zero-width spaces)
+        function normalizeString(str) {
+            if (!str) return '';
+            const easternToWestern = {
+                '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
+                '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9'
+            };
+            let normalized = str.toString();
+            for (const char in easternToWestern) {
+                normalized = normalized.replace(new RegExp(char, 'g'), easternToWestern[char]);
+            }
+            return normalized
+                .replace(/[\u200B-\u200D\uFEFF]/g, '') // Remove zero-width spaces
+                .replace(/\s+/g, ' ') // Collapse spaces
+                .trim();
+        }
+
+        const firebaseConfig = {
+            apiKey: 'AIzaSyCdqYrVFspJ4rZwidfaPtc9PYpNlQQm09k',
+            appId: '1:284879336757:web:1f42836c2382d11b73087c',
+            messagingSenderId: '284879336757',
+            projectId: 'amgg-81ac3',
+            authDomain: 'amgg-81ac3.firebaseapp.com',
+            databaseURL: 'https://amgg-81ac3-default-rtdb.firebaseio.com',
+            storageBucket: 'amgg-81ac3.firebasestorage.app',
+        };
+
+        firebase.initializeApp(firebaseConfig);
+
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        let userRole = ''; // 'admin' or 'tea'
+        let allowedTeachers = []; // list of teachers
+        let allStudents = {}; // local copy of fetched students
+        let allMonths = {}; // local copy of fetched months
+        let searchTimeout;
+
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                database.ref(`admins/${user.uid}`).once('value', adminSnapshot => {
+                    if (adminSnapshot.exists()) {
+                        userRole = 'admin';
+                        // Admins can manage all 25 teachers
+                        for (let i = 1; i <= 25; i++) {
+                            allowedTeachers.push(`مدرس ${i}`);
+                        }
+                        setupUI();
+                    } else {
+                        database.ref(`tea/${user.uid}`).once('value', teaSnapshot => {
+                            if (teaSnapshot.exists()) {
+                                userRole = 'tea';
+                                const teaVal = teaSnapshot.val() || '';
+                                allowedTeachers = teaVal.split('.').map(s => s.trim()).filter(s => s !== '');
+                                setupUI();
+                            } else {
+                                alert('ليس لديك صلاحيات الوصول لهذه الصفحة.');
+                                auth.signOut();
+                                window.location.href = 'index.html';
+                            }
+                        });
+                    }
+                });
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById("toast");
+            const toastMsg = document.getElementById("toast-msg");
+            const toastIcon = document.getElementById("toast-icon");
+            toastMsg.innerText = message;
+            
+            if (type === 'success') {
+                toastIcon.className = 'fas fa-check-circle';
+                toastIcon.style.color = '#2ecc71';
+            } else {
+                toastIcon.className = 'fas fa-exclamation-circle';
+                toastIcon.style.color = '#e74c3c';
+            }
+
+            toast.className = "show";
+            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
+        }
+
+        function updatePreview() {
+            const title = document.getElementById('notif-title').value.trim() || 'عنوان الإشعار';
+            const body = document.getElementById('notif-body').value.trim() || 'تفاصيل ومحتوى الرسالة التي ستصل للطلاب...';
+            const imageUrl = document.getElementById('notif-image').value.trim();
+
+            document.getElementById('preview-title-text').innerText = title;
+            document.getElementById('preview-body-text').innerText = body;
+
+            const previewImg = document.getElementById('preview-img');
+            if (imageUrl) {
+                previewImg.src = imageUrl;
+                previewImg.style.display = 'block';
+            } else {
+                previewImg.style.display = 'none';
+            }
+        }
+
+        function setupUI() {
+            document.getElementById('page-content').style.display = 'block';
+            
+            // Adjust back button destination if they came from 'المانيج بشكل عام'
+            const backBtn = document.getElementById('back-btn');
+            if (document.referrer.includes('المانيج%20بشكل%20عام') || document.referrer.includes('المانيج بشكل عام')) {
+                backBtn.href = '../المانيج بشكل عام/admin.html';
+            }
+
+            // If teacher only has 1 teacher allowed, hide targeting Select All controls
+            if (allowedTeachers.length <= 1) {
+                document.getElementById('teachers-select-actions').style.display = 'none';
+            }
+
+            // Render Teachers Checkboxes
+            const teachersContainer = document.getElementById('teachers-list-container');
+            teachersContainer.innerHTML = '';
+            allowedTeachers.forEach(teacherName => {
+                const label = document.createElement('label');
+                label.className = 'grid-item';
+                label.innerHTML = `
+                    <input type="checkbox" name="teachers" value="${teacherName}" onchange="onTeachersChanged()">
+                    <span>${teacherName}</span>
+                `;
+                teachersContainer.appendChild(label);
+            });
+
+            // Load data
+            loadData();
+        }
+
+        async function loadData() {
+            try {
+                // Fetch months
+                const monthsSnap = await database.ref('months').once('value');
+                allMonths = monthsSnap.val() || {};
+
+                // Fetch users and codes in parallel
+                const [usersSnap, codesSnap] = await Promise.all([
+                    database.ref('users').once('value'),
+                    database.ref('codes').once('value').catch(e => {
+                        console.warn('Could not fetch registration codes:', e);
+                        return null;
+                    })
+                ]);
+
+                allStudents = usersSnap.val() || {};
+                const codes = codesSnap ? codesSnap.val() : null;
+
+                if (codes) {
+                    for (const uid in allStudents) {
+                        allStudents[uid].allCodes = [];
+                        if (allStudents[uid].code) allStudents[uid].allCodes.push(allStudents[uid].code.toString());
+                        if (allStudents[uid].ncode) allStudents[uid].allCodes.push(allStudents[uid].ncode.toString());
+                    }
+                    for (const [codeStr, codeData] of Object.entries(codes)) {
+                        if (codeData && codeData.usedBy && allStudents[codeData.usedBy]) {
+                            if (!allStudents[codeData.usedBy].allCodes.includes(codeStr)) {
+                                allStudents[codeData.usedBy].allCodes.push(codeStr);
+                            }
+                        }
+                    }
+                }
+
+                // Render lists (empty state initially until teachers are checked)
+                renderTargetingLists();
+            } catch(err) {
+                console.error(err);
+                showToast('خطأ في تحميل البيانات من قاعدة البيانات', 'error');
+            }
+        }
+
+        function getSelectedTeachers() {
+            const checked = document.querySelectorAll('input[name="teachers"]:checked');
+            const selected = [];
+            checked.forEach(cb => selected.push(cb.value));
+            return selected;
+        }
+
+        function selectAllTeachers(value) {
+            const checkboxes = document.querySelectorAll('input[name="teachers"]');
+            checkboxes.forEach(cb => cb.checked = value);
+            onTeachersChanged();
+        }
+
+        function onTeachersChanged() {
+            renderTargetingLists();
+        }
+
+        function selectAllMonths(value) {
+            const checkboxes = document.querySelectorAll('input[name="months"]');
+            checkboxes.forEach(cb => cb.checked = value);
+        }
+
+        function selectAllStudents(value) {
+            const checkboxes = document.querySelectorAll('input[name="students"]');
+            checkboxes.forEach(cb => {
+                // Only select visible rows (based on current filter)
+                const row = cb.closest('.student-row');
+                if (row && row.style.display !== 'none') {
+                    cb.checked = value;
+                }
+            });
+        }
+
+        function renderTargetingLists() {
+            const selectedTeachers = getSelectedTeachers();
+
+            // 1. Render Months list based on selected teachers
+            const monthsContainer = document.getElementById('months-list-container');
+            monthsContainer.innerHTML = '';
+            
+            if (selectedTeachers.length === 0) {
+                monthsContainer.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; color: #888; padding: 10px;">
+                        الرجاء اختيار مدرس أولاً لعرض الشهور المتاحة.
+                    </div>
+                `;
+            } else {
+                let monthsFound = false;
+                const normalizedSelected = selectedTeachers.map(normalizeString);
+                selectedTeachers.forEach(teacherName => {
+                    const normTeacher = normalizeString(teacherName);
+                    const teacherMonths = allMonths[teacherName] || allMonths[normTeacher] || {};
+                    for (const monthId in teacherMonths) {
+                        monthsFound = true;
+                        const mData = teacherMonths[monthId];
+                        const label = document.createElement('label');
+                        label.className = 'grid-item';
+                        label.title = `${teacherName} - ${mData.name}`;
+                        label.innerHTML = `
+                            <input type="checkbox" name="months" value="${monthId}">
+                            <span>${mData.name} (${teacherName})</span>
+                        `;
+                        monthsContainer.appendChild(label);
+                    }
+                });
+
+                if (!monthsFound) {
+                    monthsContainer.innerHTML = `
+                        <div style="grid-column: 1 / -1; text-align: center; color: #888; padding: 10px;">
+                            لا توجد شهور مسجلة للمدرسين المحددين.
+                        </div>
+                    `;
+                }
+            }
+
+            // 2. Render Students list based on selected teachers
+            const studentsContainer = document.getElementById('students-list-container');
+            studentsContainer.innerHTML = '';
+
+            if (selectedTeachers.length === 0) {
+                studentsContainer.innerHTML = `
+                    <div style="text-align: center; color: #888; padding: 20px;">
+                        الرجاء اختيار مدرس أولاً لعرض قائمة الطلاب.
+                    </div>
+                `;
+            } else {
+                let studentsFound = false;
+                const normalizedSelected = selectedTeachers.map(normalizeString);
+                
+                // Track unique years for diagnostic display in case no students match
+                const uniqueStudentYears = new Set();
+                let totalStudentsLoaded = 0;
+
+                for (const uid in allStudents) {
+                    const student = allStudents[uid];
+                    if (student) {
+                        totalStudentsLoaded++;
+                        if (student.year) {
+                            uniqueStudentYears.add(student.year);
+                        }
+
+                        const normStudentYear = normalizeString(student.year);
+                        if (student.year && normalizedSelected.includes(normStudentYear)) {
+                            studentsFound = true;
+                            const studentName = student.fullName || 'بدون اسم';
+                            const studentCodesArray = student.allCodes || [];
+                            const studentCode = studentCodesArray.length > 0 ? studentCodesArray.join(' - ') : (student.code || student.ncode || '---');
+                            const studentYear = student.year || 'غير معروف';
+                            const studentPhone = student.phoneNumber || '---';
+
+                            const div = document.createElement('div');
+                            div.className = 'student-row';
+                            div.setAttribute('data-search', `${studentName} ${studentCode} ${studentPhone}`.toLowerCase());
+                            div.innerHTML = `
+                                <input type="checkbox" name="students" value="${uid}">
+                                <div class="student-details" onclick="this.parentElement.querySelector('input').click()">
+                                    <span class="student-name">${studentName}</span>
+                                    <span class="student-meta">${studentYear} | الكود: ${studentCode} | الهاتف: ${studentPhone}</span>
+                                </div>
+                            `;
+                            studentsContainer.appendChild(div);
+                        }
+                    }
+                }
+
+                if (!studentsFound) {
+                    const yearsList = Array.from(uniqueStudentYears).join(' ، ') || 'لا يوجد';
+                    studentsContainer.innerHTML = `
+                        <div style="text-align: center; color: #888; padding: 20px; line-height: 1.6;">
+                            <div>لا يوجد طلاب مسجلين تحت هؤلاء المدرسين المحددين.</div>
+                            <div style="font-size: 12px; margin-top: 10px; color: #aaa; border-top: 1px dashed #ddd; padding-top: 10px;">
+                                <strong>تشخيص الأخطاء:</strong> تم تحميل ${totalStudentsLoaded} طالب إجمالاً.<br>
+                                السنوات المتوفرة بقاعدة البيانات: [${yearsList}]<br>
+                                المدرسون المختارون للتصفية: [${selectedTeachers.join(' ، ')}]
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function filterStudentsList() {
+            const query = document.getElementById('student-search').value.toLowerCase().trim();
+            const rows = document.querySelectorAll('.student-row');
+            rows.forEach(row => {
+                const searchStr = row.getAttribute('data-search') || '';
+                if (searchStr.includes(query)) {
+                    row.style.display = 'flex';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        async function sendNotification() {
+            const title = document.getElementById('notif-title').value.trim();
+            const body = document.getElementById('notif-body').value.trim();
+            const imageUrl = document.getElementById('notif-image').value.trim();
+            const sendBtn = document.getElementById('send-btn');
+            const spinner = document.getElementById('send-spinner');
+            const btnText = document.getElementById('send-btn-text');
+
+            if (!title || !body) {
+                showToast('يجب إدخال عنوان الإشعار ومحتواه!', 'error');
+                return;
+            }
+
+            const targetTeachers = getSelectedTeachers();
+            if (targetTeachers.length === 0) {
+                showToast('يجب اختيار مدرس واحد على الأقل!', 'error');
+                return;
+            }
+
+            // Gather targeted months
+            const checkedMonths = document.querySelectorAll('input[name="months"]:checked');
+            const targetMonths = [];
+            checkedMonths.forEach(cb => targetMonths.push(cb.value));
+
+            // Gather targeted students
+            const checkedStudents = document.querySelectorAll('input[name="students"]:checked');
+            const targetStudentUids = [];
+            checkedStudents.forEach(cb => targetStudentUids.push(cb.value));
+
+            if (confirm(`هل أنت متأكد أنك تريد إرسال الإشعار لجميع الأجهزة المطابقة؟`)) {
+                sendBtn.disabled = true;
+                btnText.style.display = 'none';
+                spinner.style.display = 'block';
+
+                try {
+                    const sendCustomNotificationFn = firebase.app().functions('us-central1').httpsCallable('sendCustomNotification');
+                    const result = await sendCustomNotificationFn({
+                        targetTeachers,
+                        targetMonths,
+                        targetStudentUids,
+                        title,
+                        body,
+                        imageUrl: imageUrl === "" ? null : imageUrl
+                    });
+
+                    if (result.data && result.data.success) {
+                        showToast(result.data.message || 'تم إرسال الإشعارات بنجاح!');
+                        // Reset form fields
+                        document.getElementById('notif-title').value = '';
+                        document.getElementById('notif-body').value = '';
+                        document.getElementById('notif-image').value = '';
+                        updatePreview();
+                    } else {
+                        showToast('فشل إرسال الإشعارات.', 'error');
+                    }
+                } catch(error) {
+                    console.error('Error sending custom notification:', error);
+                    showToast(error.message || 'حدث خطأ أثناء إرسال الإشعار', 'error');
+                } finally {
+                    sendBtn.disabled = false;
+                    btnText.style.display = 'inline-block';
+                    spinner.style.display = 'none';
+                }
+            }
+        }
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            auth.signOut().then(() => window.location.href = 'index.html');
+        });
+    </script>
+</body>
+</html>
