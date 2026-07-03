@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>إدارة المنشورات والإعجابات | AMG</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #6C5CE7;
+            --primary-hover: #5B4BCB;
+            --secondary-color: #A29BFE;
+            --dark-color: #2D3436;
+            --light-color: #F5F6FA;
+            --accent-color: #00CE9F;
+            --danger-color: #E74C3C;
+            --danger-hover: #C0392B;
+            --surface-color: #FFFFFF;
+            --text-primary: #2D3436;
+            --text-secondary: #7F8C8D;
+            --border-color: #EAEFF2;
+            --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.02);
+            --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 15px 30px rgba(108, 92, 231, 0.1);
+            --radius: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #8E7CFF;
+            --primary-hover: #A29BFE;
+            --secondary-color: #5E53A5;
+            --dark-color: #F5F6FA;
+            --light-color: #0F172A;
+            --surface-color: #1E293B;
+            --text-primary: #F8FAFC;
+            --text-secondary: #94A3B8;
+            --border-color: #334155;
+            --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.2);
+            --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 15px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        body {
+            background-color: var(--light-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 60px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header Navigation */
+        header {
+            background-color: var(--surface-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 0;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        .logo i {
+            font-size: 24px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-header {
+            padding: 8px 16px;
+            border-radius: var(--radius);
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            transition: var(--transition);
+        }
+
+        .btn-header:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .btn-logout {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: var(--danger-color);
+            border: none;
+        }
+
+        .btn-logout:hover {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .theme-toggle {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--border-color);
+            transform: scale(1.05);
+        }
+
+        /* Banner Card */
+        .hero-banner {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: var(--radius);
+            padding: 30px;
+            color: white;
+            margin-top: 20px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-banner::before {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            top: -100px;
+            left: -100px;
+            pointer-events: none;
+        }
+
+        .hero-banner h1 {
+            font-size: 26px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .hero-banner p {
+            font-size: 15px;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        /* Stats bar */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+        }
+
+        .stat-icon.posts {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+
+        .stat-icon.likes {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .stat-info h3 {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .stat-info .stat-value {
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        /* Controls Panel */
+        .controls-card {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 25px;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-group label {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .control-input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 2px solid var(--border-color);
+            background-color: var(--light-color);
+            color: var(--text-primary);
+            font-size: 15px;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .control-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.1);
+        }
+
+        select.control-input {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237F8C8D' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: left 12px center;
+            background-size: 16px;
+            padding-left: 40px;
+        }
+
+        /* Post Items List */
+        .posts-section-header {
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .posts-section-header i {
+            color: var(--primary-color);
+        }
+
+        .posts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .post-card {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .post-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--secondary-color);
+        }
+
+        .post-card-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid var(--border-color);
+            background-color: rgba(0,0,0,0.01);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .post-date {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .post-card-body {
+            padding: 25px;
+            flex-grow: 1;
+        }
+
+        .post-text {
+            font-size: 16px;
+            line-height: 1.7;
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+            color: var(--text-primary);
+        }
+
+        .post-media-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .post-media-img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-pdf-badge {
+            background-color: rgba(231, 76, 60, 0.08);
+            border: 1px solid rgba(231, 76, 60, 0.2);
+            color: var(--danger-color);
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            text-decoration: none;
+            width: fit-content;
+        }
+
+        /* Editing Controls Section inside the card */
+        .editor-section {
+            background-color: rgba(0,0,0,0.02);
+            border-top: 1px solid var(--border-color);
+            padding: 20px 25px;
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr;
+            align-items: center;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .editor-section {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+
+        .publisher-edit-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .publisher-edit-group label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+
+        .publisher-input-wrapper {
+            display: flex;
+            align-items: center;
+            background-color: var(--light-color);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .publisher-input-wrapper:focus-within {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.1);
+        }
+
+        .publisher-input-wrapper input {
+            border: none;
+            background: transparent;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-primary);
+            flex-grow: 1;
+            outline: none;
+            width: 50%;
+        }
+
+        .publisher-domain-suffix {
+            padding: 0 12px;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            background-color: rgba(0,0,0,0.03);
+            height: 100%;
+            display: flex;
+            align-items: center;
+            border-right: 1px solid var(--border-color);
+            user-select: none;
+        }
+
+        .likes-edit-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .likes-edit-group label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+
+        .likes-adjust-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: var(--surface-color);
+            border: 1.5px solid var(--border-color);
+            padding: 5px 10px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-adjust {
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+            transition: var(--transition);
+        }
+
+        .btn-adjust.inc {
+            background-color: var(--accent-color);
+        }
+
+        .btn-adjust.inc:hover {
+            opacity: 0.9;
+            transform: scale(1.1);
+        }
+
+        .btn-adjust.dec {
+            background-color: var(--danger-color);
+        }
+
+        .btn-adjust.dec:hover {
+            opacity: 0.9;
+            transform: scale(1.1);
+        }
+
+        /* Number Input for Likes styling */
+        .likes-number-input {
+            width: 65px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 4px;
+            font-weight: 800;
+            font-size: 15px;
+            background: var(--light-color);
+            color: var(--text-primary);
+            text-align: center;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .likes-number-input:focus {
+            border-color: var(--primary-color);
+            background: var(--surface-color);
+        }
+
+        /* Remove arrows from number input */
+        .likes-number-input::-webkit-outer-spin-button,
+        .likes-number-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .likes-number-input {
+            -moz-appearance: textfield;
+        }
+
+        /* Card Actions */
+        .card-actions-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .btn-card {
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+        }
+
+        .btn-card.save {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 12px rgba(108, 92, 231, 0.2);
+        }
+
+        .btn-card.save:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn-card.delete {
+            background-color: rgba(231, 76, 60, 0.08);
+            color: var(--danger-color);
+        }
+
+        .btn-card.delete:hover {
+            background-color: var(--danger-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Empty state styling */
+        .empty-state {
+            background-color: var(--surface-color);
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius);
+            padding: 50px 20px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .empty-state i {
+            font-size: 50px;
+            margin-bottom: 15px;
+            color: var(--secondary-color);
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        /* Loading Skeleton */
+        .skeleton-card {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+
+        .skeleton-line {
+            height: 15px;
+            background-color: var(--border-color);
+            border-radius: 4px;
+        }
+
+        .skeleton-line.header { width: 40%; height: 20px; }
+        .skeleton-line.body-1 { width: 100%; }
+        .skeleton-line.body-2 { width: 90%; }
+        .skeleton-line.body-3 { width: 70%; }
+        .skeleton-line.footer { width: 30%; height: 35px; align-self: flex-end; }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast-item {
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            border-right: 4px solid var(--primary-color);
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 14px;
+            transform: translateX(-120%);
+            animation: slideIn 0.3s forwards cubic-bezier(0.18, 0.89, 0.32, 1.28);
+        }
+
+        .toast-item.success {
+            border-right-color: var(--accent-color);
+        }
+
+        .toast-item.error {
+            border-right-color: var(--danger-color);
+        }
+
+        .toast-item.info {
+            border-right-color: var(--primary-color);
+        }
+
+        @keyframes slideIn {
+            to { transform: translateX(0); }
+        }
+
+        .toast-item.fade-out {
+            animation: fadeOut 0.4s forwards ease;
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; transform: translateY(15px); }
+        }
+        
+        /* Spinners */
+        .spinner-inline {
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-cubes"></i>
+                <span>لوحة تحكم AMG</span>
+            </div>
+            <div class="header-actions">
+                <a href="admin.html" class="btn-header">
+                    <i class="fas fa-arrow-right"></i>
+                    <span>العودة للرئيسية</span>
+                </a>
+                <button class="theme-toggle" id="themeBtn" title="تبديل الوضع الفاتح/الداكن">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="btn-header btn-logout" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>خروج</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container" id="pageContainer" style="display: none;">
+        
+        <!-- Hero Banner -->
+        <div class="hero-banner">
+            <h1>إدارة المنشورات والتفاعل</h1>
+            <p>تعديل ناشري البوستات وضبط أعداد اللايكات بالزيادة والنقصان أو الكتابة اليدوية</p>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon posts">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>إجمالي المنشورات المعروضة</h3>
+                    <div class="stat-value" id="statsTotalPosts">0</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon likes">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>مجموع التفاعل (اللايكات)</h3>
+                    <div class="stat-value" id="statsTotalLikes">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter and Search Controls -->
+        <div class="controls-card">
+            <div class="controls-grid">
+                <div class="control-group">
+                    <label for="serverSelect">اختر السيرفر (السنة الدراسية)</label>
+                    <select id="serverSelect" class="control-input">
+                        <option value="" disabled selected>جاري تحميل السيرفرات...</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="searchInput">البحث في المنشورات</label>
+                    <input type="text" id="searchInput" class="control-input" placeholder="ابحث بنص البوست أو اسم الناشر...">
+                </div>
+            </div>
+        </div>
+
+        <!-- Posts Title Section -->
+        <div class="posts-section-header">
+            <i class="fas fa-newspaper"></i>
+            <span>قائمة المنشورات</span>
+        </div>
+
+        <!-- Skeleton loaders -->
+        <div id="loadingSkeletons" style="display: none;">
+            <div class="posts-list">
+                <div class="skeleton-card">
+                    <div class="skeleton-line header"></div>
+                    <div class="skeleton-line body-1"></div>
+                    <div class="skeleton-line body-2"></div>
+                    <div class="skeleton-line body-3"></div>
+                    <div class="skeleton-line footer"></div>
+                </div>
+                <div class="skeleton-card">
+                    <div class="skeleton-line header"></div>
+                    <div class="skeleton-line body-1"></div>
+                    <div class="skeleton-line body-2"></div>
+                    <div class="skeleton-line footer"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Posts List -->
+        <div class="posts-list" id="postsContainer">
+            <div class="empty-state">
+                <i class="fas fa-server"></i>
+                <h3>يرجى اختيار سيرفر للبدء</h3>
+                <p>اختر السيرفر الدراسي من القائمة المنسدلة أعلاه لعرض بوستاته والتحكم بها.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Toast Notifications Area -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: 'AIzaSyCdqYrVFspJ4rZwidfaPtc9PYpNlQQm09k',
+            appId: '1:284879336757:web:1f42836c2382d11b73087c',
+            messagingSenderId: '284879336757',
+            projectId: 'amgg-81ac3',
+            authDomain: 'amgg-81ac3.firebaseapp.com',
+            databaseURL: 'https://amgg-81ac3-default-rtdb.firebaseio.com',
+            storageBucket: 'amgg-81ac3.firebasestorage.app',
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        // UI References
+        const pageContainer = document.getElementById('pageContainer');
+        const serverSelect = document.getElementById('serverSelect');
+        const searchInput = document.getElementById('searchInput');
+        const postsContainer = document.getElementById('postsContainer');
+        const loadingSkeletons = document.getElementById('loadingSkeletons');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const themeBtn = document.getElementById('themeBtn');
+        const toastContainer = document.getElementById('toastContainer');
+        const statsTotalPosts = document.getElementById('statsTotalPosts');
+        const statsTotalLikes = document.getElementById('statsTotalLikes');
+
+        // Global State
+        let currentUser = null;
+        let allowedServers = [];
+        let loadedPosts = []; // Local cache of fetched posts
+        let postsState = {};  // Tracks unsaved changes: { postKey: { likes: [], userName: "", userDomain: "" } }
+
+        // Light/Dark Theme Switcher
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+
+        themeBtn.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        });
+
+        function updateThemeIcon(theme) {
+            themeBtn.innerHTML = theme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        }
+
+        // Authentication Monitor
+        auth.onAuthStateChanged(async user => {
+            if (user) {
+                currentUser = user;
+                try {
+                    const adminSnap = await db.ref(`admins/${user.uid}`).once('value');
+                    const teaSnap = await db.ref(`tea/${user.uid}`).once('value');
+
+                    if (adminSnap.exists()) {
+                        // Admins can manage all مدرس 1 to مدرس 25
+                        allowedServers = [];
+                        for (let i = 1; i <= 25; i++) {
+                            allowedServers.push(`مدرس ${i}`);
+                        }
+                        initUI();
+                    } else if (teaSnap.exists()) {
+                        // Teachers get only their assigned servers
+                        const val = teaSnap.val();
+                        allowedServers = String(val).split('.').map(t => t.trim()).filter(Boolean);
+                        initUI();
+                    } else {
+                        showToast('غير مصرح لك بدخول لوحة التحكم.', 'error');
+                        setTimeout(() => {
+                            auth.signOut();
+                            window.location.href = 'index.html';
+                        }, 2000);
+                    }
+                } catch(e) {
+                    console.error(e);
+                    showToast('حدث خطأ أثناء فحص الصلاحيات.', 'error');
+                }
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        // Initialize UI Dropdown
+        function initUI() {
+            pageContainer.style.display = 'block';
+            serverSelect.innerHTML = '<option value="" disabled selected>-- اختر السنة الدراسية / المدرس --</option>';
+            allowedServers.forEach(srv => {
+                const opt = document.createElement('option');
+                opt.value = srv;
+                opt.textContent = srv;
+                serverSelect.appendChild(opt);
+            });
+
+            // Automatically load first server if only one is allowed
+            if (allowedServers.length === 1) {
+                serverSelect.value = allowedServers[0];
+                loadPosts();
+            }
+        }
+
+        // Event Listeners
+        serverSelect.addEventListener('change', loadPosts);
+        searchInput.addEventListener('input', filterPostsDisplay);
+        logoutBtn.addEventListener('click', () => {
+            auth.signOut().then(() => {
+                window.location.href = 'index.html';
+            });
+        });
+
+        // Fetch Posts from Database
+        function loadPosts() {
+            const server = serverSelect.value;
+            if (!server) return;
+
+            // Clear previous states
+            loadedPosts = [];
+            postsState = {};
+            postsContainer.innerHTML = '';
+            loadingSkeletons.style.display = 'block';
+            updateStats();
+
+            db.ref(`posts/${server}`).limitToLast(50).once('value', snapshot => {
+                loadingSkeletons.style.display = 'none';
+                
+                if (!snapshot.exists()) {
+                    postsContainer.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-folder-open"></i>
+                            <h3>لا يوجد بوستات منشورة</h3>
+                            <p>لم يتم العثور على أي بوستات منشورة في سيرفر (${server}) حتى الآن.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                snapshot.forEach(child => {
+                    const postVal = child.val();
+                    postVal.key = child.key;
+                    loadedPosts.push(postVal);
+
+                    // Initialize edit state cache (likes)
+                    let likesArr = [];
+                    if (postVal.likes) {
+                        if (Array.isArray(postVal.likes)) {
+                            likesArr = [...postVal.likes];
+                        } else {
+                            likesArr = Object.values(postVal.likes);
+                        }
+                    }
+
+                    // Parse publisher name: split before and after '@'
+                    let rawUser = postVal.user || "Anonymous";
+                    let userNamePart = "Anonymous";
+                    let userDomainPart = "@t1.com";
+
+                    if (rawUser.includes('@')) {
+                        const parts = rawUser.split('@');
+                        userNamePart = parts[0];
+                        userDomainPart = '@' + parts.slice(1).join('@');
+                    } else {
+                        userNamePart = rawUser;
+                        userDomainPart = ''; // originally had no domain
+                    }
+
+                    postsState[child.key] = {
+                        likes: likesArr,
+                        userName: userNamePart,
+                        userDomain: userDomainPart
+                    };
+                });
+
+                // Sort posts: newest first
+                loadedPosts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                renderPosts(loadedPosts);
+            }, error => {
+                loadingSkeletons.style.display = 'none';
+                showToast('فشل تحميل البيانات: ' + error.message, 'error');
+            });
+        }
+
+        // Render Posts Cards
+        function renderPosts(posts) {
+            postsContainer.innerHTML = '';
+            
+            if (posts.length === 0) {
+                postsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-search"></i>
+                        <h3>لم يتم العثور على نتائج</h3>
+                        <p>لا توجد منشورات تطابق شروط البحث الحالية.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            posts.forEach(post => {
+                const card = document.createElement('div');
+                card.className = 'post-card';
+                card.id = `post-card-${post.key}`;
+
+                // Image gallery markup
+                let galleryHtml = '';
+                if (post.images && post.images.length > 0) {
+                    galleryHtml = '<div class="post-media-gallery">';
+                    post.images.forEach(imgUrl => {
+                        galleryHtml += `<img src="${imgUrl}" class="post-media-img" alt="Post Image" onerror="this.src='https://placehold.co/300x150?text=Image+Load+Failed'">`;
+                    });
+                    galleryHtml += '</div>';
+                }
+
+                // PDF badge markup
+                let pdfHtml = '';
+                if (post.pdf) {
+                    const pdfName = post.pdfName || 'ملف مستند PDF';
+                    pdfHtml = `
+                        <a href="${post.pdf}" target="_blank" class="post-pdf-badge">
+                            <i class="fas fa-file-pdf"></i>
+                            <span>${pdfName}</span>
+                        </a>
+                    `;
+                }
+
+                const postDate = new Date(post.timestamp);
+                const formattedDate = postDate.toLocaleDateString('ar-EG', {
+                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+                });
+                const formattedTime = postDate.toLocaleTimeString('ar-EG', {
+                    hour: '2-digit', minute: '2-digit'
+                });
+
+                // Get current cached likes count & publisher parts
+                const currentLikesCount = postsState[post.key].likes.length;
+                const cachedUserName = postsState[post.key].userName;
+                const cachedDomain = postsState[post.key].userDomain;
+
+                card.innerHTML = `
+                    <div class="post-card-header">
+                        <div class="post-date">
+                            <i class="far fa-clock"></i>
+                            <span>${formattedDate} - ${formattedTime}</span>
+                        </div>
+                        <span style="font-size: 11px; background: rgba(108, 92, 231, 0.1); color: var(--primary-color); padding: 4px 8px; border-radius: 20px; font-weight: 700;">ID: ${post.key}</span>
+                    </div>
+                    <div class="post-card-body">
+                        <div class="post-text">${post.post || '<span style="color:var(--text-secondary); font-style:italic;">منشور فارغ بدون نص...</span>'}</div>
+                        ${galleryHtml}
+                        ${pdfHtml}
+                    </div>
+                    <div class="editor-section">
+                        <div class="publisher-edit-group">
+                            <label><i class="fas fa-user-edit"></i> تعديل اسم الناشر</label>
+                            <div class="publisher-input-wrapper">
+                                <input type="text" value="${cachedUserName}" 
+                                    oninput="updateLocalPublisher('${post.key}', this.value)" placeholder="اسم الناشر">
+                                <span class="publisher-domain-suffix" title="النطاق المحفوظ تلقائياً">${cachedDomain || '@t1.com'}</span>
+                            </div>
+                        </div>
+                        <div class="likes-edit-group">
+                            <label><i class="fas fa-heart"></i> التحكم في اللايكات</label>
+                            <div class="likes-adjust-controls">
+                                <button class="btn-adjust dec" onclick="adjustLikes('${post.key}', -1)" title="تقليل لايك"><i class="fas fa-minus"></i></button>
+                                <input type="number" class="likes-number-input" id="likes-input-${post.key}" 
+                                    value="${currentLikesCount}" min="0" oninput="updateLikesCountManual('${post.key}', this.value)">
+                                <button class="btn-adjust inc" onclick="adjustLikes('${post.key}', 1)" title="زيادة لايك"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+                        <div class="card-actions-group">
+                            <button class="btn-card save" id="btn-save-${post.key}" onclick="savePostChanges('${post.key}')">
+                                <i class="fas fa-save"></i>
+                                <span>حفظ التعديلات</span>
+                            </button>
+                            <button class="btn-card delete" onclick="deletePost('${post.key}')" title="حذف المنشور نهائياً">
+                                <i class="fas fa-trash-alt"></i>
+                                <span>حذف</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                postsContainer.appendChild(card);
+            });
+
+            updateStats();
+        }
+
+        // Update local state publisher username (part before @)
+        window.updateLocalPublisher = function(postKey, val) {
+            if (postsState[postKey]) {
+                postsState[postKey].userName = val;
+            }
+        };
+
+        // Manual Input of likes
+        window.updateLikesCountManual = function(postKey, val) {
+            const state = postsState[postKey];
+            if (!state) return;
+
+            let targetCount = parseInt(val);
+            if (isNaN(targetCount) || targetCount < 0) {
+                targetCount = 0;
+            }
+
+            const currentCount = state.likes.length;
+            if (targetCount > currentCount) {
+                const diff = targetCount - currentCount;
+                for (let i = 0; i < diff; i++) {
+                    const randomId = Math.floor(1000 + Math.random() * 9000);
+                    const mockEmail = `like_user_${Date.now()}_${randomId}@amg-system.com`;
+                    state.likes.push(mockEmail);
+                }
+            } else if (targetCount < currentCount) {
+                state.likes = state.likes.slice(0, targetCount);
+            }
+
+            // Sync normalized count back to input field
+            const inputEl = document.getElementById(`likes-input-${postKey}`);
+            if (inputEl) {
+                inputEl.value = state.likes.length;
+            }
+
+            updateStats();
+        };
+
+        // Adjust Likes Array locally with + / -
+        window.adjustLikes = function(postKey, amount) {
+            const state = postsState[postKey];
+            if (!state) return;
+
+            if (amount === 1) {
+                const randomId = Math.floor(1000 + Math.random() * 9000);
+                const mockEmail = `like_user_${Date.now()}_${randomId}@amg-system.com`;
+                state.likes.push(mockEmail);
+            } else if (amount === -1) {
+                if (state.likes.length === 0) {
+                    showToast('لا يمكن تقليل عدد اللايكات عن الصفر!', 'error');
+                    return;
+                }
+                state.likes.pop();
+            }
+
+            // Update Input box count
+            const inputEl = document.getElementById(`likes-input-${postKey}`);
+            if (inputEl) {
+                inputEl.value = state.likes.length;
+            }
+
+            updateStats();
+        };
+
+        // Save username (combined with original domain suffix) and likes to Firebase DB
+        window.savePostChanges = async function(postKey) {
+            const server = serverSelect.value;
+            const state = postsState[postKey];
+            if (!server || !state) return;
+
+            const saveBtn = document.getElementById(`btn-save-${postKey}`);
+            const originalHtml = saveBtn.innerHTML;
+
+            // Set Loading state on save button
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = `<span class="spinner-inline"></span> <span>جاري الحفظ...</span>`;
+
+            // Assemble full email publisher name
+            const finalDomain = state.userDomain || "@t1.com";
+            const finalPublisherName = state.userName + finalDomain;
+
+            try {
+                // Save to database
+                await db.ref(`posts/${server}/${postKey}`).update({
+                    user: finalPublisherName,
+                    likes: state.likes
+                });
+
+                showToast('تم حفظ التعديلات بنجاح!', 'success');
+            } catch(e) {
+                console.error(e);
+                showToast('فشل حفظ التعديلات: ' + e.message, 'error');
+            } finally {
+                // Restore button state
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalHtml;
+            }
+        };
+
+        // Delete post logic
+        window.deletePost = async function(postKey) {
+            const server = serverSelect.value;
+            if (!server) return;
+
+            if (!confirm('هل أنت متأكد من حذف هذا البوست نهائياً؟ لا يمكن التراجع عن هذا الإجراء.')) return;
+
+            try {
+                await db.ref(`posts/${server}/${postKey}`).remove();
+                showToast('تم حذف المنشور بنجاح.', 'success');
+                
+                // Animate card removal
+                const card = document.getElementById(`post-card-${postKey}`);
+                if (card) {
+                    card.style.transform = 'scale(0.8)';
+                    card.style.opacity = '0';
+                    setTimeout(() => {
+                        loadPosts(); // Reload to refresh
+                    }, 300);
+                } else {
+                    loadPosts();
+                }
+            } catch(e) {
+                console.error(e);
+                showToast('حدث خطأ أثناء حذف البوست: ' + e.message, 'error');
+            }
+        };
+
+        // Filter displayed posts
+        function filterPostsDisplay() {
+            const query = searchInput.value.toLowerCase().trim();
+            if (!query) {
+                renderPosts(loadedPosts);
+                return;
+            }
+
+            const filtered = loadedPosts.filter(post => {
+                const textMatch = post.post && post.post.toLowerCase().includes(query);
+                const publisherMatch = post.user && post.user.toLowerCase().includes(query);
+                const idMatch = post.key && post.key.toLowerCase().includes(query);
+                return textMatch || publisherMatch || idMatch;
+            });
+
+            renderPosts(filtered);
+        }
+
+        // Update statistics counter boxes
+        function updateStats() {
+            statsTotalPosts.textContent = loadedPosts.length;
+            
+            let totalLikes = 0;
+            for (const key in postsState) {
+                totalLikes += postsState[key].likes.length;
+            }
+            statsTotalLikes.textContent = totalLikes;
+        }
+
+        // Custom Beautiful Toasts Notification
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast-item ${type}`;
+            
+            let icon = 'fa-check-circle';
+            if (type === 'error') icon = 'fa-exclamation-circle';
+            if (type === 'info') icon = 'fa-info-circle';
+
+            toast.innerHTML = `
+                <i class="fas ${icon}"></i>
+                <span>${message}</span>
+            `;
+
+            toastContainer.appendChild(toast);
+
+            // Trigger fade out and removal
+            setTimeout(() => {
+                toast.classList.add('fade-out');
+                setTimeout(() => {
+                    toast.remove();
+                }, 400);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
