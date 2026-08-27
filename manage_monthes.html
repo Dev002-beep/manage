@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>إدارة صلاحيات الطلاب وإضافة الشهور</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <style>
 /* ... (نفس أكواد الـ CSS الخاصة بك) ... */
 :root {
@@ -267,6 +268,25 @@ text-align: center;
 color: #999;
 padding: 50px 0;
 }
+.added-month-badge {
+    display: inline-flex;
+    align-items: center;
+    background-color: #f1f2f6;
+    border: 1px solid #dfe4ea;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 14px;
+    gap: 10px;
+    font-weight: 500;
+}
+.added-month-badge .delete-month-icon {
+    color: var(--danger-color);
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.added-month-badge .delete-month-icon:hover {
+    transform: scale(1.2);
+}
 </style>
 </head>
 <body>
@@ -296,6 +316,14 @@ padding: 50px 0;
                 <input type="number" id="new-month-order" class="form-control" value="1">
             </div>
             <button id="add-month-btn">إضافة الشهر</button>
+        </div>
+        
+        <!-- الشهور الحالية للسنة المحددة -->
+        <div id="selected-year-months-section" style="display: none; margin-top: 25px; padding-top: 20px; border-top: 1px dashed #ddd;">
+            <h4 style="color: var(--primary-color); margin-bottom: 12px; font-size: 16px;">الشهور المضافة حالياً لهذه السنة:</h4>
+            <div id="selected-year-months-list" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                <!-- يتم تعبئتها ديناميكياً -->
+            </div>
         </div>
     </div>
 
@@ -463,6 +491,7 @@ function initializeAppLogic() {
             showAlert(`✅ تم إضافة الشهر: "${monthName}" لسنة ${yearName} بنجاح.`, 'success');
             
             await fetchAllMonths();
+            renderMonthsForSelectedYear();
             newMonthNameInput.value = '';
             newMonthOrderInput.value = (parseInt(newMonthOrderInput.value) + 1).toString();
 
@@ -485,6 +514,81 @@ function initializeAppLogic() {
             allMonthsData = snapshot.val() || {};
         } catch (error) {
             console.error("Error fetching all months:", error);
+        }
+    }
+
+    // 2.5. Render months list for selected study year and support deletion
+    function renderMonthsForSelectedYear() {
+        const selectedYear = newMonthYearSelect.value;
+        const monthsSection = document.getElementById('selected-year-months-section');
+        const monthsList = document.getElementById('selected-year-months-list');
+        
+        if (!selectedYear) {
+            monthsSection.style.display = 'none';
+            return;
+        }
+        
+        const monthsOfSelectedYear = allMonthsData[selectedYear] || {};
+        monthsList.innerHTML = '';
+        
+        const monthEntries = Object.entries(monthsOfSelectedYear);
+        if (monthEntries.length === 0) {
+            monthsList.innerHTML = '<p style="color: #999; font-size: 14px; width: 100%; text-align: center;">لا توجد شهور مضافة لهذه السنة بعد.</p>';
+            monthsSection.style.display = 'block';
+            return;
+        }
+        
+        // Sort by order
+        monthEntries.sort((a, b) => (a[1].order || 999) - (b[1].order || 999));
+        
+        monthEntries.forEach(([monthId, monthData]) => {
+            const badge = document.createElement('div');
+            badge.className = 'added-month-badge';
+            badge.innerHTML = `
+                <span><strong>${monthData.name || 'شهر غير مسمى'}</strong> (ترتيب: ${monthData.order || 0})</span>
+                <i class="fas fa-trash delete-month-icon" title="حذف هذا الشهر" onclick="deleteMonthGlobally('${selectedYear}', '${monthId}', '${monthData.name}')"></i>
+            `;
+            monthsList.appendChild(badge);
+        });
+        
+        monthsSection.style.display = 'block';
+    }
+
+    newMonthYearSelect.addEventListener('change', renderMonthsForSelectedYear);
+
+    window.deleteMonthGlobally = async function(yearName, monthId, monthName) {
+        if (confirm(`هل أنت متأكد تماماً من حذف الشهر "${monthName}" لسنة "${yearName}"؟\nهذا الإجراء سيحذف صلاحية هذا الشهر لدى جميع الطلاب المسجلين فيه ولا يمكن التراجع عنه.`)) {
+            try {
+                // 1. Delete month globally
+                await database.ref(`months/${yearName}/${monthId}`).remove();
+                
+                // 2. Clean up student access records
+                const accessSnap = await database.ref('student_month_access').once('value');
+                const accessData = accessSnap.val() || {};
+                const updates = {};
+                for (const studentId in accessData) {
+                    if (accessData[studentId] && accessData[studentId][monthId] !== undefined) {
+                        updates[`student_month_access/${studentId}/${monthId}`] = null;
+                    }
+                }
+                if (Object.keys(updates).length > 0) {
+                    await database.ref().update(updates);
+                }
+                
+                showAlert(`✅ تم حذف الشهر "${monthName}" بنجاح وتحديث صلاحيات الطلاب.`, 'success');
+                
+                // Update local state and UI
+                await fetchAllMonths();
+                renderMonthsForSelectedYear();
+                
+                // If a student is currently selected and they belong to this year, refresh their months display
+                if (selectedStudentId && selectedStudentData && selectedStudentData.yearName === yearName) {
+                    selectStudent(selectedStudentId);
+                }
+            } catch (error) {
+                console.error("Error deleting month:", error);
+                showAlert(`🚫 فشل حذف الشهر: ${error.message}`, 'danger');
+            }
         }
     }
 
