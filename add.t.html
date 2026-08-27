@@ -41,6 +41,31 @@
 
         .loading { display: none; width: 24px; height: 24px; border: 3px solid #ffffff; border-radius: 50%; border-top-color: transparent; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Teachers Management Section Styles */
+        .teachers-card { background: white; border-radius: 15px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-top: 30px; }
+        .teachers-list { margin-top: 20px; }
+        .teacher-item { background: #f9f9f9; border: 1px solid #eee; border-radius: 10px; padding: 20px; margin-bottom: 20px; transition: all 0.3s ease; }
+        .teacher-item:hover { box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .teacher-info { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .teacher-email { font-weight: bold; color: var(--primary-color); font-size: 16px; word-break: break-all; }
+        .teacher-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+        .badge { background-color: var(--secondary-color); color: white; padding: 4px 10px; border-radius: 15px; font-size: 12px; font-weight: bold; }
+        .edit-panel { display: none; margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd; }
+        .edit-panel-title { font-weight: bold; margin-bottom: 12px; display: block; color: var(--primary-color); font-size: 14px; }
+        .action-buttons { display: flex; gap: 10px; }
+        .btn-small { padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; border: none; font-family: 'Tajawal'; transition: all 0.2s; display: flex; align-items: center; gap: 5px; }
+        .btn-small:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-edit { background-color: var(--primary-color); color: white; }
+        .btn-delete { background-color: #E74C3C; color: white; }
+        .btn-save { background-color: var(--success-color); color: white; }
+        .btn-cancel { background-color: #95a5a6; color: white; }
+        
+        .checkbox-grid-small { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin-bottom: 15px; }
+        .checkbox-item-small { display: flex; align-items: center; background: white; padding: 8px; border-radius: 6px; border: 1px solid #e0e0e0; cursor: pointer; transition: 0.2s; }
+        .checkbox-item-small:hover { border-color: var(--primary-color); }
+        .checkbox-item-small input { margin-left: 8px; width: 16px; height: 16px; cursor: pointer; }
+        .checkbox-item-small span { font-weight: 500; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -74,6 +99,16 @@
                 </button>
             </form>
         </div>
+
+        <div class="card teachers-card">
+            <div class="header" style="margin-bottom: 20px;">
+                <h1>المدرسون الحاليون وصلاحياتهم</h1>
+                <p>تعديل صلاحيات المدرسين بالزيادة والنقصان أو حذف وصولهم تماماً من النظام.</p>
+            </div>
+            <div id="teachersList" class="teachers-list">
+                <p style="text-align: center; color: #666; font-weight: 500;">جاري تحميل المدرسين...</p>
+            </div>
+        </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
@@ -104,6 +139,8 @@
                     if (!snapshot.exists()) {
                         alert('غير مصرح لك');
                         window.location.href = 'index.html';
+                    } else {
+                        loadTeachers();
                     }
                 });
             } else {
@@ -162,6 +199,7 @@
 
                 // Save to Realtime Database using Main App (Admin privileges)
                 await db.ref('tea/' + newUid).set(teaValue);
+                await db.ref('tea_emails/' + newUid).set(email);
 
                 // Cleanup
                 await secondaryAuth.signOut();
@@ -178,6 +216,168 @@
                 loader.style.display = 'none';
             }
         });
+
+        // 3. Load existing teachers
+        async function loadTeachers() {
+            const teachersListDiv = document.getElementById('teachersList');
+            teachersListDiv.innerHTML = '<p style="text-align: center; color: #666; font-weight: 500;">جاري تحميل المدرسين...</p>';
+            try {
+                const [teaSnap, emailsSnap] = await Promise.all([
+                    db.ref('tea').once('value'),
+                    db.ref('tea_emails').once('value')
+                ]);
+                const teaData = teaSnap.val() || {};
+                const emailsData = emailsSnap.val() || {};
+                
+                teachersListDiv.innerHTML = '';
+                const uids = Object.keys(teaData);
+                if (uids.length === 0) {
+                    teachersListDiv.innerHTML = '<p style="text-align: center; color: #666;">لا يوجد مدرسون مسجلون حالياً.</p>';
+                    return;
+                }
+                
+                uids.forEach(uid => {
+                    const permissionsStr = teaData[uid] || '';
+                    const permissions = permissionsStr ? permissionsStr.split('.').map(p => p.trim()) : [];
+                    const email = emailsData[uid] || `مدرس (معرف: ${uid.substring(0, 8)}...)`;
+                    
+                    const item = document.createElement('div');
+                    item.className = 'teacher-item';
+                    item.id = `teacher-item-${uid}`;
+                    
+                    // Render badges
+                    let badgesHTML = '';
+                    if (permissions.length > 0) {
+                        permissions.forEach(p => {
+                            badgesHTML += `<span class="badge">${p}</span> `;
+                        });
+                    } else {
+                        badgesHTML = '<span class="badge" style="background-color: #e74c3c;">لا توجد صلاحيات</span>';
+                    }
+                    
+                    // Render small checkboxes grid for editing
+                    let checkboxesHTML = '';
+                    for (let i = 1; i <= 25; i++) {
+                        const tName = `مدرس ${i}`;
+                        const isChecked = permissions.includes(tName) ? 'checked' : '';
+                        checkboxesHTML += `
+                            <label class="checkbox-item-small">
+                                <input type="checkbox" name="edit-servers-${uid}" value="${tName}" ${isChecked}>
+                                <span>${tName}</span>
+                            </label>
+                        `;
+                    }
+                    
+                    item.innerHTML = `
+                        <div class="teacher-info">
+                            <div>
+                                <div class="teacher-email">${email}</div>
+                                <div class="teacher-badges" id="badges-container-${uid}">
+                                    ${badgesHTML}
+                                </div>
+                            </div>
+                            <div class="action-buttons">
+                                <button class="btn-small btn-edit" onclick="toggleEditPanel('${uid}')">
+                                    <i class="fas fa-edit"></i> تعديل الصلاحيات
+                                </button>
+                                <button class="btn-small btn-delete" onclick="deleteTeacher('${uid}', '${email}')">
+                                    <i class="fas fa-trash"></i> حذف
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="edit-panel" id="edit-panel-${uid}">
+                            <span class="edit-panel-title">تعديل السيرفرات (المدرسين) المسموح بها لهذا الحساب:</span>
+                            <div class="checkbox-grid-small">
+                                ${checkboxesHTML}
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn-small btn-save" onclick="saveTeacherPermissions('${uid}')">حفظ التغييرات</button>
+                                <button class="btn-small btn-cancel" onclick="toggleEditPanel('${uid}')">إلغاء</button>
+                            </div>
+                        </div>
+                    `;
+                    teachersListDiv.appendChild(item);
+                });
+            } catch (error) {
+                console.error(error);
+                teachersListDiv.innerHTML = '<p style="text-align: center; color: #e74c3c; font-weight: 500;">حدث خطأ أثناء تحميل البيانات.</p>';
+            }
+        }
+
+        window.toggleEditPanel = function(uid) {
+            const panel = document.getElementById(`edit-panel-${uid}`);
+            if (panel.style.display === 'block') {
+                panel.style.display = 'none';
+            } else {
+                panel.style.display = 'block';
+            }
+        }
+
+        window.saveTeacherPermissions = async function(uid) {
+            const checkboxes = document.querySelectorAll(`input[name="edit-servers-${uid}"]:checked`);
+            let selectedServers = [];
+            checkboxes.forEach((cb) => {
+                selectedServers.push(cb.value);
+            });
+            const newTeaValue = selectedServers.join('.');
+            
+            const saveBtn = document.querySelector(`#edit-panel-${uid} .btn-save`);
+            const originalText = saveBtn.textContent;
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'جاري الحفظ...';
+            
+            try {
+                await db.ref('tea/' + uid).set(newTeaValue);
+                
+                // Update badges in UI
+                const badgesContainer = document.getElementById(`badges-container-${uid}`);
+                badgesContainer.innerHTML = '';
+                if (selectedServers.length > 0) {
+                    selectedServers.forEach(p => {
+                        const span = document.createElement('span');
+                        span.className = 'badge';
+                        span.textContent = p;
+                        badgesContainer.appendChild(span);
+                        badgesContainer.appendChild(document.createTextNode(' '));
+                    });
+                } else {
+                    badgesContainer.innerHTML = '<span class="badge" style="background-color: #e74c3c;">لا توجد صلاحيات</span>';
+                }
+                
+                alert('تم تحديث صلاحيات المدرس بنجاح!');
+                toggleEditPanel(uid);
+            } catch (error) {
+                console.error(error);
+                alert('حدث خطأ أثناء الحفظ: ' + error.message);
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = originalText;
+            }
+        }
+
+        window.deleteTeacher = async function(uid, email) {
+            if (confirm(`هل أنت متأكد تماماً من حذف صلاحيات المدرس "${email}" نهائياً من النظام؟\nهذا الإجراء سيمنعه من تسجيل الدخول.`)) {
+                try {
+                    await Promise.all([
+                        db.ref('tea/' + uid).remove(),
+                        db.ref('tea_emails/' + uid).remove()
+                    ]);
+                    alert('تم حذف صلاحيات وحساب المدرس بنجاح.');
+                    const item = document.getElementById(`teacher-item-${uid}`);
+                    if (item) item.remove();
+                    
+                    // If no teachers left, show placeholder
+                    const teachersListDiv = document.getElementById('teachersList');
+                    if (teachersListDiv.children.length === 0) {
+                        teachersListDiv.innerHTML = '<p style="text-align: center; color: #666;">لا يوجد مدرسون مسجلون حالياً.</p>';
+                    }
+                } catch (error) {
+                    console.error(error);
+                    alert('حدث خطأ أثناء الحذف: ' + error.message);
+                }
+            }
+        }
     </script>
 </body>
 </html>
