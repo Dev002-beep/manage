@@ -373,6 +373,10 @@
                         <i class="fas fa-user-plus"></i> إنشاء أكواد
                     </a>
                     
+                    <a href="URL_changer.html" class="header-btn" style="background-color: #0984e3;">
+                        <i class="fas fa-link"></i> URL
+                    </a>
+
                     <a href="ai.html" class="header-btn" style="background-color: #e67e22;">
                         <i class="fas fa-robot"></i> المساعد الذكي
                     </a>
@@ -537,12 +541,23 @@
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
+                        <label for="app-select">اختر التطبيق لتعديل روابطه</label>
+                        <select id="app-select" class="form-control" style="background-color: #2c2c2e; color: #fff; border: 1px solid #3a3a3c; border-radius: 6px; padding: 8px;">
+                            <option value="amg">AMG (التطبيق الأساسي)</option>
+                            <option value="remon">Remon (التطبيق الثاني)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label for="facebook-link">رابط صفحة الفيسبوك</label>
                         <input type="text" id="facebook-link" class="form-control" dir="ltr" placeholder="مثال: https://facebook.com/yourpage">
                     </div>
                     <div class="form-group">
                         <label for="whatsapp-number">رقم هاتف الواتساب</label>
                         <input type="text" id="whatsapp-number" class="form-control" dir="ltr" placeholder="مثال: +201012345678">
+                    </div>
+                    <div class="form-group">
+                        <label id="third-link-label" for="third-link">رابط التيك توك</label>
+                        <input type="text" id="third-link" class="form-control" dir="ltr" placeholder="مثال: https://tiktok.com/@username">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -631,6 +646,7 @@
                     'a[href="manage_monthes.html"]',
                     'a[href="make code.html"]',
                     'a[href="ai.html"]',
+                    'a[href="URL_changer.html"]',
                     '#settings-btn',
                     '#disable-all-btn'
                 ];
@@ -703,12 +719,24 @@
                     const userCodesArray = user.allCodes || [];
                     const userCodeDisplay = userCodesArray.length > 0 ? userCodesArray.join(' - ') : 'غير متوفر';
 
+                    // AI Prediction badge
+                    const aiPrediction = user.ai_prediction;
+                    let badgeHTML = '';
+                    if (aiPrediction && aiPrediction.prediction === 'At Risk') {
+                        badgeHTML = `<span style="background-color: #E74C3C; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin-right: 10px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px;" title="نسبة المخاطرة: ${aiPrediction.risk_probability}% \n التوصية: ${aiPrediction.recommendation}"><i class="fas fa-exclamation-triangle"></i> معرض للتعثر (${aiPrediction.risk_probability}%)</span>`;
+                    } else if (aiPrediction && aiPrediction.prediction === 'Excellent') {
+                        badgeHTML = `<span style="background-color: #F1C40F; color: #333; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin-right: 10px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px;" title="التوصية: ${aiPrediction.recommendation}"><i class="fas fa-trophy"></i> متفوق 🏆</span>`;
+                    } else if (aiPrediction && aiPrediction.prediction === 'Safe') {
+                        badgeHTML = `<span style="background-color: #27AE60; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin-right: 10px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px;" title="نسبة المخاطرة: ${aiPrediction.risk_probability}% \n التوصية: ${aiPrediction.recommendation}"><i class="fas fa-check-circle"></i> مستقر (${aiPrediction.risk_probability}%)</span>`;
+                    }
+
                     const userCard = document.createElement('div');
                     userCard.className = 'user-card';
                     userCard.innerHTML = `
                         <div class="user-info">
                             <div class="user-email">
                                 البريد الإلكتروني: <span class="copyable" onclick="copyText('${userEmail}')" title="اضغط للنسخ">${userEmail}</span>
+                                ${badgeHTML}
                             </div>
                             <div class="user-detail">معرف الجهاز: <span id="device-text-${userId}">${deviceId}</span></div>
                             <div class="user-detail">السنة الدراسية: <span class="year-display">${userYear}</span></div>
@@ -1045,24 +1073,62 @@
 
             async function openSettingsModal() {
                 document.getElementById('settings-modal').style.display = 'flex';
+                const app = document.getElementById('app-select').value;
+                await loadSettingsForApp(app);
+            }
+
+            async function loadSettingsForApp(app) {
                 try {
-                    const data = (await database.ref('contact_links').once('value')).val() || {};
-                    document.getElementById('facebook-link').value = data.facebook || '';
-                    document.getElementById('whatsapp-number').value = data.whatsapp || '';
-                } catch (error) { }
+                    const dbPath = app === 'remon' ? 'contact_links_clone' : 'contact_links';
+                    const data = (await database.ref(dbPath).once('value')).val() || {};
+                    document.getElementById('facebook-link').value = data.facebook || (app === 'amg' ? 'https://www.facebook.com/share/17S5z6nHEq/' : '');
+                    document.getElementById('whatsapp-number').value = data.whatsapp || (app === 'amg' ? '201275063663' : '');
+                    
+                    const thirdLabel = document.getElementById('third-link-label');
+                    const thirdInput = document.getElementById('third-link');
+                    if (app === 'remon') {
+                        thirdLabel.textContent = "رابط اليوتيوب";
+                        thirdInput.placeholder = "مثال: https://youtube.com/@channel";
+                        thirdInput.value = data.youtube || '';
+                    } else {
+                        thirdLabel.textContent = "رابط التيك توك";
+                        thirdInput.placeholder = "مثال: https://tiktok.com/@username";
+                        thirdInput.value = data.tiktok || '';
+                    }
+                } catch (error) { 
+                    console.error("Error loading settings:", error);
+                    alert("خطأ أثناء تحميل الإعدادات: " + error.message);
+                }
             }
 
             async function saveSettings() {
+                const app = document.getElementById('app-select').value;
                 const fbLink = document.getElementById('facebook-link').value.trim();
                 const waNumber = document.getElementById('whatsapp-number').value.trim();
+                const thirdLink = document.getElementById('third-link').value.trim();
+                
+                const dbPath = app === 'remon' ? 'contact_links_clone' : 'contact_links';
+                const updateData = {
+                    facebook: fbLink === "" ? null : fbLink,
+                    whatsapp: waNumber === "" ? null : waNumber
+                };
+                
+                if (app === 'remon') {
+                    updateData.youtube = thirdLink === "" ? null : thirdLink;
+                    updateData.tiktok = null;
+                } else {
+                    updateData.tiktok = thirdLink === "" ? null : thirdLink;
+                    updateData.youtube = null;
+                }
+                
                 try {
-                    await database.ref('contact_links').update({
-                        facebook: fbLink === "" ? null : fbLink,
-                        whatsapp: waNumber === "" ? null : waNumber
-                    });
+                    await database.ref(dbPath).update(updateData);
                     showToast('تم الحفظ');
                     closeModal('settings-modal');
-                } catch (error) { showToast('خطأ بالحفظ', 'error'); }
+                } catch (error) { 
+                    console.error("Error saving settings:", error);
+                    showToast('خطأ بالحفظ: ' + error.message, 'error'); 
+                }
             }
 
             function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
@@ -1135,6 +1201,9 @@
             document.getElementById('confirm-disable-all-btn').addEventListener('click', disableAllUsers);
             document.getElementById('settings-btn').addEventListener('click', openSettingsModal);
             document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
+            document.getElementById('app-select').addEventListener('change', function() {
+                loadSettingsForApp(this.value);
+            });
 
             document.querySelectorAll('.close-modal, .close-modal-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
