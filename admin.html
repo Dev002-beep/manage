@@ -570,6 +570,32 @@
             </div>
         </div>
 
+        <!-- نافذة الباركود المنبثقة -->
+        <div class="modal" id="barcode-modal">
+            <div class="modal-content" style="max-width: 420px; text-align: center; padding: 25px;">
+                <div class="modal-header">
+                    <h3 class="modal-title" style="display: flex; align-items: center; gap: 8px; color: var(--primary-color);">
+                        <i class="fas fa-barcode"></i>
+                        <span>باركود كود التسجيل</span>
+                    </h3>
+                    <span class="close-modal">&times;</span>
+                </div>
+                <div class="modal-body" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px 0;">
+                    <p id="barcode-student-email" style="font-weight: bold; margin-bottom: 15px; color: #555; font-size: 14px; word-break: break-all;"></p>
+                    
+                    <div style="background: white; padding: 15px; border-radius: 8px; border: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; min-height: 150px; width: 100%; box-sizing: border-box;">
+                        <svg id="barcode" style="max-width: 100%;"></svg>
+                    </div>
+                </div>
+                <div class="modal-footer" style="justify-content: center; gap: 12px; margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
+                    <button type="button" class="btn btn-secondary" id="toggle-barcode-text-btn" style="background-color: var(--primary-color);">
+                        <i class="fas fa-eye-slash"></i> إخفاء الأرقام
+                    </button>
+                    <button type="button" class="btn btn-secondary close-modal-btn">إغلاق</button>
+                </div>
+            </div>
+        </div>
+
     </div> 
     
     <div id="toast">
@@ -581,6 +607,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-functions-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 
     <script>
         document.addEventListener('contextmenu', event => event.preventDefault());
@@ -718,6 +745,7 @@
 
                     const userCodesArray = user.allCodes || [];
                     const userCodeDisplay = userCodesArray.length > 0 ? userCodesArray.join(' - ') : 'غير متوفر';
+                    const firstCode = user.code ? user.code.toString() : (userCodesArray.length > 0 ? userCodesArray[0] : null);
 
                     // AI Prediction badge
                     const aiPrediction = user.ai_prediction;
@@ -758,6 +786,11 @@
                             <div class="user-detail">وقت التعطيل: ${disableDate}</div>
                         </div>
                         <div class="user-actions">
+                            ${firstCode ? `
+                            <button class="btn btn-secondary barcode-btn" onclick="showBarcodeDirectly('${firstCode}', '${userEmail}')" style="background-color: #27ae60;" title="عرض الباركود">
+                                <i class="fas fa-barcode"></i> باركود
+                            </button>
+                            ` : ''}
                             <button class="btn btn-primary change-password-btn" data-user-id="${userId}" data-user-email="${userEmail}" title="تغيير كلمة السر">
                                 <i class="fas fa-key"></i> كلمة السر
                             </button>
@@ -1183,6 +1216,64 @@
                 }
             }
 
+            let currentBarcodeCode = '';
+            let currentBarcodeDisplayValue = true;
+
+            window.showBarcodeDirectly = function(code, email) {
+                currentBarcodeCode = code;
+                currentBarcodeDisplayValue = true;
+                
+                document.getElementById('barcode-student-email').textContent = email;
+                
+                // Reset button text
+                const toggleBtn = document.getElementById('toggle-barcode-text-btn');
+                toggleBtn.innerHTML = '<i class="fas fa-eye-slash"></i> إخفاء الأرقام';
+                
+                // Draw barcode
+                setTimeout(() => {
+                    try {
+                        JsBarcode("#barcode", code, {
+                            format: "CODE128",
+                            lineColor: "#2d3436",
+                            width: 2.2,
+                            height: 100,
+                            displayValue: true,
+                            textPosition: "bottom",
+                            fontOptions: "bold",
+                            fontSize: 16
+                        });
+                    } catch (e) {
+                        console.error("Barcode error:", e);
+                        alert("فشل توليد الباركود للكود: " + code);
+                    }
+                }, 50);
+
+                document.getElementById('barcode-modal').style.display = 'flex';
+            };
+
+            window.toggleBarcodeValue = function() {
+                if (!currentBarcodeCode) return;
+                currentBarcodeDisplayValue = !currentBarcodeDisplayValue;
+                
+                JsBarcode("#barcode", currentBarcodeCode, {
+                    format: "CODE128",
+                    lineColor: "#2d3436",
+                    width: 2.2,
+                    height: 100,
+                    displayValue: currentBarcodeDisplayValue,
+                    textPosition: "bottom",
+                    fontOptions: "bold",
+                    fontSize: 16
+                });
+
+                const toggleBtn = document.getElementById('toggle-barcode-text-btn');
+                if (currentBarcodeDisplayValue) {
+                    toggleBtn.innerHTML = '<i class="fas fa-eye-slash"></i> إخفاء الأرقام';
+                } else {
+                    toggleBtn.innerHTML = '<i class="fas fa-eye"></i> إظهار الأرقام';
+                }
+            };
+
             function attachButtonListeners() {
                 document.querySelectorAll('.edit-user-btn').forEach(button => button.addEventListener('click', openEditUserModal));
                 document.querySelectorAll('.force-logout-btn').forEach(button => button.addEventListener('click', openForceLogoutModal));
@@ -1201,6 +1292,7 @@
             document.getElementById('confirm-disable-all-btn').addEventListener('click', disableAllUsers);
             document.getElementById('settings-btn').addEventListener('click', openSettingsModal);
             document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
+            document.getElementById('toggle-barcode-text-btn').addEventListener('click', window.toggleBarcodeValue);
             document.getElementById('app-select').addEventListener('change', function() {
                 loadSettingsForApp(this.value);
             });
