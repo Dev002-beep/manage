@@ -281,6 +281,28 @@
             border-radius: 5px;
             font-weight: 500;
         }
+        .teacher-inline-select {
+            padding: 5px 12px;
+            border-radius: 8px;
+            border: 1.5px solid var(--primary-color);
+            background-color: #ffffff;
+            color: var(--primary-color);
+            font-weight: bold;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 13px;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(108, 92, 231, 0.1);
+        }
+        .teacher-inline-select:hover {
+            border-color: #5B4BCB;
+            background-color: #f8f7ff;
+        }
+        .teacher-inline-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+        }
 
         /* --- زر التعطيل والتفعيل الجديد (Toggle Switch) --- */
         .switch {
@@ -372,6 +394,9 @@
                     <a href="make code.html" class="header-btn"> 
                         <i class="fas fa-user-plus"></i> إنشاء أكواد
                     </a>
+                    <a href="codes_status.html" class="header-btn" style="background-color: #6C5CE7;"> 
+                        <i class="fas fa-barcode"></i> أكواد المدرسين
+                    </a>
                     
                     <a href="URL_changer.html" class="header-btn" style="background-color: #0984e3;">
                         <i class="fas fa-link"></i> URL
@@ -429,6 +454,11 @@
                     <span class="close-modal">&times;</span>
                 </div>
                 <div class="modal-body">
+                    <div class="form-group">
+                        <label for="edit-user-teacher">المدرس / السنة الدراسية</label>
+                        <select id="edit-user-teacher" class="form-control" style="font-weight: bold; color: var(--primary-color);">
+                        </select>
+                    </div>
                     <div class="form-group">
                         <label for="edit-disable-date">تاريخ التعطيل</label>
                         <input type="date" id="edit-disable-date" class="form-control">
@@ -767,7 +797,17 @@
                                 ${badgeHTML}
                             </div>
                             <div class="user-detail">معرف الجهاز: <span id="device-text-${userId}">${deviceId}</span></div>
-                            <div class="user-detail">السنة الدراسية: <span class="year-display">${userYear}</span></div>
+                            <div class="user-detail teacher-select-row" style="display: flex; align-items: center; gap: 8px; margin: 8px 0; flex-wrap: wrap;">
+                                <span style="font-weight: bold; color: var(--dark-color); display: flex; align-items: center; gap: 5px;">
+                                    <i class="fas fa-chalkboard-teacher" style="color: var(--primary-color);"></i> المدرس:
+                                </span>
+                                <div style="display: inline-flex; align-items: center; gap: 6px;">
+                                    <select class="teacher-inline-select" id="teacher-select-${userId}" onchange="changeUserTeacherDirectly('${userId}', this.value)" title="تغيير مدرس الطالب">
+                                        ${generateTeacherOptions(userYear)}
+                                    </select>
+                                    <span id="teacher-spinner-${userId}" class="loading" style="display: none; width: 16px; height: 16px; border: 2px solid var(--primary-color); border-top-color: transparent;"></span>
+                                </div>
+                            </div>
                             <div class="user-detail">كلمة المرور: <span class="copyable" onclick="copyText('${userPass}')" title="اضغط للنسخ">${userPass}</span></div>
                             <div class="user-detail">رقم الهاتف: <span class="copyable" onclick="copyText('${userPhone}')" title="اضغط للنسخ">${userPhone}</span></div>
                             <div class="user-detail">أكواد التسجيل: <span class="copyable" onclick="copyText('${userCodeDisplay}')" title="اضغط للنسخ">${userCodeDisplay}</span></div>
@@ -1014,6 +1054,46 @@
             }
 
 
+            function generateTeacherOptions(currentTeacher) {
+                let teachersList = [];
+                if (userRole === 'tea') {
+                    teachersList = [...allowedTeachers];
+                } else {
+                    for (let i = 1; i <= 25; i++) {
+                        teachersList.push(`مدرس ${i}`);
+                    }
+                }
+                
+                if (currentTeacher && currentTeacher !== 'غير محدد' && !teachersList.includes(currentTeacher)) {
+                    teachersList.unshift(currentTeacher);
+                }
+
+                return teachersList.map(t => `<option value="${t}" ${t === currentTeacher ? 'selected' : ''}>${t}</option>`).join('');
+            }
+
+            window.changeUserTeacherDirectly = async function(userId, newTeacher) {
+                const spinner = document.getElementById(`teacher-spinner-${userId}`);
+                const selectElem = document.getElementById(`teacher-select-${userId}`);
+                
+                if (spinner) spinner.style.display = 'inline-block';
+                if (selectElem) selectElem.disabled = true;
+
+                try {
+                    await database.ref(`users/${userId}`).update({ year: newTeacher });
+                    showToast(`تم تغيير مدرس الطالب إلى "${newTeacher}" بنجاح`, 'success');
+                    updateLocalUserAndRefresh(userId, { year: newTeacher });
+                } catch (error) {
+                    console.error('Error changing teacher:', error);
+                    showToast('حدث خطأ أثناء تغيير المدرس', 'error');
+                    if (selectElem && allUsersData[userId]) {
+                        selectElem.value = allUsersData[userId].year || 'مدرس 1';
+                    }
+                } finally {
+                    if (spinner) spinner.style.display = 'none';
+                    if (selectElem) selectElem.disabled = false;
+                }
+            };
+
             function updateLocalUserAndRefresh(userId, updates) {
                 if (allUsersData[userId]) {
                     Object.assign(allUsersData[userId], updates);
@@ -1025,6 +1105,13 @@
                 const userId = e.currentTarget.getAttribute('data-user-id');
                 const user = allUsersData[userId];
                 document.getElementById('edit-user-id').value = userId;
+
+                const teacherSelect = document.getElementById('edit-user-teacher');
+                if (teacherSelect) {
+                    teacherSelect.innerHTML = generateTeacherOptions(user.year || 'مدرس 1');
+                    teacherSelect.value = user.year || 'مدرس 1';
+                }
+
                 const disableTimestamp = user.disableTimestamp;
                 if (disableTimestamp) {
                     const date = new Date(disableTimestamp);
@@ -1039,6 +1126,7 @@
             
             async function saveUserEdits() {
                 const userId = document.getElementById('edit-user-id').value;
+                const newTeacher = document.getElementById('edit-user-teacher') ? document.getElementById('edit-user-teacher').value : null;
                 const newDate = document.getElementById('edit-disable-date').value;
                 const newTime = document.getElementById('edit-disable-time').value;
                 const confirmBtn = document.getElementById('confirm-edit-btn');
@@ -1048,11 +1136,15 @@
                 if (newDate && newTime) {
                     disableTimestamp = new Date(`${newDate}T${newTime}:00`).getTime();
                 }
+                const updates = { disableTimestamp: disableTimestamp };
+                if (newTeacher) {
+                    updates.year = newTeacher;
+                }
                 try {
-                    await database.ref(`users/${userId}`).update({ disableTimestamp: disableTimestamp });
-                    showToast('تم تحديث الوقت بنجاح');
+                    await database.ref(`users/${userId}`).update(updates);
+                    showToast('تم حفظ التعديلات بنجاح');
                     closeModal('edit-user-modal');
-                    updateLocalUserAndRefresh(userId, { disableTimestamp: disableTimestamp });
+                    updateLocalUserAndRefresh(userId, updates);
                 } catch (error) {
                     showToast('حدث خطأ', 'error');
                 } finally {

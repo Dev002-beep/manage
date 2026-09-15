@@ -165,6 +165,15 @@
         .btn-confirm { background-color: var(--primary-color); }
         .btn-cancel { background-color: #95a5a6; }
 
+        /* --- تنسيقات نافذة الباركود العامة --- */
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .modal-title { font-size: 18px; color: var(--primary-color); margin: 0; }
+        .close-modal { font-size: 24px; cursor: pointer; color: #888; font-weight: bold; line-height: 1; transition: 0.2s; }
+        .close-modal:hover { color: #333; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+        .btn-secondary { background-color: #6c757d; color: white; border: none; border-radius: 5px; padding: 8px 16px; cursor: pointer; font-family: 'Tajawal'; font-weight: bold; transition: 0.3s; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+        .btn-secondary:hover { opacity: 0.9; }
+
         /* --- تحسينات الموبايل (Media Queries) --- */
         @media (max-width: 768px) {
             .navbar { justify-content: space-between; overflow-x: auto; padding-bottom: 10px; }
@@ -265,9 +274,36 @@
         </div>
     </div>
 
+    <!-- نافذة الباركود المنبثقة -->
+    <div class="modal" id="barcode-modal">
+        <div class="modal-content" style="max-width: 420px; width: 90%; text-align: center; padding: 25px; box-sizing: border-box;">
+            <div class="modal-header">
+                <h3 class="modal-title" style="display: flex; align-items: center; gap: 8px; color: var(--primary-color);">
+                    <i class="fas fa-barcode"></i>
+                    <span>باركود كود التسجيل</span>
+                </h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px 0;">
+                <p id="barcode-student-email" style="font-weight: bold; margin-bottom: 15px; color: #555; font-size: 14px; word-break: break-all; margin-top: 0;"></p>
+                
+                <div style="background: white; padding: 15px; border-radius: 8px; border: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; min-height: 150px; width: 100%; box-sizing: border-box;">
+                    <svg id="barcode" style="max-width: 100%;"></svg>
+                </div>
+            </div>
+            <div class="modal-footer" style="justify-content: center; gap: 12px; margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
+                <button type="button" class="btn-secondary" id="toggle-barcode-text-btn" style="background-color: var(--primary-color);">
+                    <i class="fas fa-eye-slash"></i> إخفاء الأرقام
+                </button>
+                <button type="button" class="btn-secondary close-modal-btn">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 
     <script>
         const firebaseConfig = {
@@ -448,12 +484,21 @@
                     if (latestActivation > 0) displayDate = latestActivation;
 
                     const studentCodes = userCodeMap[uid] || [];
+                    if (userData.code && !studentCodes.includes(userData.code.toString())) {
+                        studentCodes.unshift(userData.code.toString());
+                    }
+                    if (userData.ncode && !studentCodes.includes(userData.ncode.toString())) {
+                        studentCodes.push(userData.ncode.toString());
+                    }
+
+                    const firstCode = studentCodes.length > 0 ? studentCodes[0] : (userData.code ? userData.code.toString() : (userData.ncode ? userData.ncode.toString() : null));
 
                     allRowsData.push({
                         uid: uid,
                         fullName: userData.fullName || 'بدون اسم',
                         phone: userData.phoneNumber || '---',
                         code: studentCodes, 
+                        firstCode: firstCode,
                         calculatedJoinDate: displayDate,
                         activeMonths: activeMonthsList,
                         email: userData.email || 'غير متوفر',
@@ -551,6 +596,12 @@
                                 <i class="fas fa-chevron-down"></i>
                             </button>
                             <br>
+                            ${row.firstCode ? `
+                            <button class="btn-add-code barcode-btn" onclick="showBarcodeDirectly('${row.firstCode}', '${row.email}')" style="background-color: #27ae60; margin-top: 5px;" title="عرض الباركود">
+                                <i class="fas fa-barcode"></i> باركود
+                            </button>
+                            <br>
+                            ` : ''}
                             <button class="btn-add-code" onclick="openActivationModal('${row.uid}', '${row.fullName}')" title="تفعيل كود للطالب">
                                 <i class="fas fa-key"></i> تفعيل بالكود
                             </button>
@@ -566,6 +617,12 @@
                                 <div>
                                     <span style="font-weight:bold; color:#555;">كلمة المرور: </span>
                                     <span class="copy-badge" onclick="copyData(this, '${row.password}')">${row.password} <i class="fas fa-copy"></i></span>
+                                </div>
+                                <div>
+                                    <span style="font-weight:bold; color:#555;"><i class="fas fa-chalkboard-teacher" style="color: var(--primary-color);"></i> المدرس: </span>
+                                    <select onchange="changeStudentTeacher('${row.uid}', this.value)" style="padding: 5px 12px; border-radius: 6px; border: 1.5px solid var(--primary-color); font-weight: bold; color: var(--primary-color); font-family: 'Tajawal'; cursor: pointer; background: #fff; font-size: 13px;">
+                                        ${getTeacherOptionsForActive(activeTeacher)}
+                                    </select>
                                 </div>
                             </div>
                         </td>
@@ -816,6 +873,130 @@
                 element.style.color = '';
             }, 1500);
         };
+
+        let currentBarcodeCode = '';
+        let currentBarcodeDisplayValue = true;
+
+        window.showBarcodeDirectly = function (code, email) {
+            if (!code || code === 'null' || code === 'undefined') {
+                alert("لا يوجد كود متاح لهذا الطالب!");
+                return;
+            }
+            currentBarcodeCode = code;
+            currentBarcodeDisplayValue = true;
+
+            const emailElem = document.getElementById('barcode-student-email');
+            if (emailElem) emailElem.textContent = email || '';
+
+            const toggleBtn = document.getElementById('toggle-barcode-text-btn');
+            if (toggleBtn) {
+                toggleBtn.innerHTML = '<i class="fas fa-eye-slash"></i> إخفاء الأرقام';
+            }
+
+            setTimeout(() => {
+                try {
+                    JsBarcode("#barcode", code, {
+                        format: "CODE128",
+                        lineColor: "#2d3436",
+                        width: 2.2,
+                        height: 100,
+                        displayValue: true,
+                        textPosition: "bottom",
+                        fontOptions: "bold",
+                        fontSize: 16
+                    });
+                } catch (e) {
+                    console.error("Barcode error:", e);
+                    alert("فشل توليد الباركود للكود: " + code);
+                }
+            }, 50);
+
+            document.getElementById('barcode-modal').style.display = 'flex';
+        };
+
+        window.toggleBarcodeValue = function () {
+            if (!currentBarcodeCode) return;
+            currentBarcodeDisplayValue = !currentBarcodeDisplayValue;
+
+            try {
+                JsBarcode("#barcode", currentBarcodeCode, {
+                    format: "CODE128",
+                    lineColor: "#2d3436",
+                    width: 2.2,
+                    height: 100,
+                    displayValue: currentBarcodeDisplayValue,
+                    textPosition: "bottom",
+                    fontOptions: "bold",
+                    fontSize: 16
+                });
+            } catch (e) {
+                console.error("Barcode error:", e);
+            }
+
+            const toggleBtn = document.getElementById('toggle-barcode-text-btn');
+            if (toggleBtn) {
+                if (currentBarcodeDisplayValue) {
+                    toggleBtn.innerHTML = '<i class="fas fa-eye-slash"></i> إخفاء الأرقام';
+                } else {
+                    toggleBtn.innerHTML = '<i class="fas fa-eye"></i> إظهار الأرقام';
+                }
+            }
+        };
+
+        window.closeBarcodeModal = function () {
+            document.getElementById('barcode-modal').style.display = 'none';
+        };
+
+        function getTeacherOptionsForActive(currentTeacher) {
+            let list = [];
+            if (isAdmin) {
+                for (let i = 1; i <= 25; i++) {
+                    list.push(`مدرس ${i}`);
+                }
+            } else {
+                list = [...allowedTeachers];
+            }
+            if (currentTeacher && !list.includes(currentTeacher)) {
+                list.unshift(currentTeacher);
+            }
+            return list.map(t => `<option value="${t}" ${t === currentTeacher ? 'selected' : ''}>${t}</option>`).join('');
+        }
+
+        window.changeStudentTeacher = async function(uid, newTeacher) {
+            if (!newTeacher || newTeacher === activeTeacher) return;
+            if (!confirm(`هل أنت متأكد من تغيير مدرس هذا الطالب إلى "${newTeacher}"؟`)) {
+                initPage();
+                return;
+            }
+            try {
+                await db.ref(`users/${uid}`).update({ year: newTeacher });
+                alert(`تم نقل الطالب إلى "${newTeacher}" بنجاح`);
+                initPage();
+            } catch (error) {
+                console.error(error);
+                alert('حدث خطأ أثناء تغيير المدرس');
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.close-modal, .close-modal-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const modalElement = e.target.closest('.modal');
+                    if (modalElement) modalElement.style.display = 'none';
+                });
+            });
+
+            const toggleBarcodeBtn = document.getElementById('toggle-barcode-text-btn');
+            if (toggleBarcodeBtn) {
+                toggleBarcodeBtn.addEventListener('click', window.toggleBarcodeValue);
+            }
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                e.target.style.display = 'none';
+            }
+        });
 
         function logout() {
             localStorage.removeItem('selectedTeacher');
