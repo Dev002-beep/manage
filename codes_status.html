@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أكواد المدرسين (المستخدمة وغير المستخدمة) | AMG</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6C5CE7;
+            --primary-dark: #5641e5;
+            --primary-light: #ece9fd;
+            --secondary: #A29BFE;
+            --bg: #F4F6FB;
+            --card-bg: #FFFFFF;
+            --text-dark: #2D3436;
+            --text-muted: #636e72;
+            --used-color: #10b981;
+            --used-bg: #ecfdf5;
+            --used-border: #a7f3d0;
+            --unused-color: #f59e0b;
+            --unused-bg: #fffbeb;
+            --unused-border: #fde68a;
+            --danger: #ef4444;
+            --border-radius: 14px;
+            --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 12px 30px rgba(108, 92, 231, 0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-dark);
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+
+        /* Top Header */
+        header {
+            background: linear-gradient(135deg, #6C5CE7 0%, #4834d4 100%);
+            color: white;
+            padding: 16px 24px;
+            box-shadow: 0 4px 20px rgba(108, 92, 231, 0.25);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header-title-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-icon {
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(8px);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .header-text h1 {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+        }
+
+        .header-text p {
+            font-size: 13px;
+            opacity: 0.85;
+        }
+
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.28);
+            transform: translateY(-2px);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 24px auto;
+            padding: 0 20px;
+        }
+
+        /* Filter Card */
+        .control-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 22px 26px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 24px;
+            border: 1px solid #eef0f7;
+        }
+
+        .control-grid {
+            display: grid;
+            grid-template-columns: 2fr 1.5fr 2fr auto;
+            gap: 18px;
+            align-items: flex-end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-size: 14px;
+            font-weight: 700;
+            color: #4b5563;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .form-label i {
+            color: var(--primary);
+        }
+
+        .form-select, .form-input {
+            width: 100%;
+            padding: 11px 16px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 15px;
+            color: var(--text-dark);
+            background-color: #fcfdfe;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .form-select:focus, .form-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15);
+            background-color: #fff;
+        }
+
+        .search-wrapper {
+            position: relative;
+        }
+
+        .search-wrapper i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            font-size: 15px;
+        }
+
+        .search-wrapper input {
+            padding-left: 38px;
+        }
+
+        .btn-refresh {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+            height: 46px;
+        }
+
+        .btn-refresh:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(108, 92, 231, 0.25);
+        }
+
+        /* Stats Cards */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 18px 22px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid #eef0f7;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 5px;
+        }
+
+        .stat-card.total::before { background: var(--primary); }
+        .stat-card.used::before { background: var(--used-color); }
+        .stat-card.unused::before { background: var(--unused-color); }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .stat-card.total .stat-icon {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .stat-card.used .stat-icon {
+            background: var(--used-bg);
+            color: var(--used-color);
+        }
+
+        .stat-card.unused .stat-icon {
+            background: var(--unused-bg);
+            color: var(--unused-color);
+        }
+
+        .stat-details {
+            flex: 1;
+        }
+
+        .stat-title {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--text-dark);
+            line-height: 1.1;
+        }
+
+        .stat-percent {
+            font-size: 12px;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        /* Split Columns View */
+        .split-view-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .column-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid #eef0f7;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .column-header {
+            padding: 18px 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            border-bottom: 1.5px solid #f1f3f9;
+        }
+
+        .column-header.used-header {
+            background: linear-gradient(to left, #f0fdf4, #ffffff);
+        }
+
+        .column-header.unused-header {
+            background: linear-gradient(to left, #fffbeb, #ffffff);
+        }
+
+        .column-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .column-title {
+            font-size: 17px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .used-header .column-title { color: #047857; }
+        .unused-header .column-title { color: #b45309; }
+
+        .column-badge {
+            font-size: 13px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .used-header .column-badge {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .unused-header .column-badge {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .column-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-action {
+            padding: 7px 13px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-copy-all {
+            background: white;
+            border: 1.5px solid #d1d5db;
+            color: #374151;
+        }
+
+        .btn-copy-all:hover {
+            background: #f9fafb;
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-export {
+            background: white;
+            border: 1.5px solid #d1d5db;
+            color: #4b5563;
+        }
+
+        .btn-export:hover {
+            background: #f9fafb;
+            border-color: #4b5563;
+        }
+
+        /* Codes List Area */
+        .codes-list-container {
+            padding: 16px;
+            max-height: 650px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-height: 220px;
+        }
+
+        .codes-list-container::-webkit-scrollbar {
+            width: 7px;
+        }
+
+        .codes-list-container::-webkit-scrollbar-track {
+            background: #f1f3f7;
+        }
+
+        .codes-list-container::-webkit-scrollbar-thumb {
+            background: #c7d2fe;
+            border-radius: 10px;
+        }
+
+        /* Single Code Row / Item */
+        .code-item {
+            background: #ffffff;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .code-item:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transform: translateY(-1px);
+        }
+
+        .code-item.used-item {
+            border-left: 4px solid var(--used-color);
+        }
+
+        .code-item.unused-item {
+            border-left: 4px solid var(--unused-color);
+        }
+
+        .code-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .code-main-line {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .code-text {
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #111827;
+            user-select: all;
+            direction: ltr;
+        }
+
+        .code-index {
+            font-size: 11px;
+            font-weight: 700;
+            color: #9ca3af;
+            background: #f3f4f6;
+            padding: 2px 7px;
+            border-radius: 6px;
+        }
+
+        .code-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            font-size: 12px;
+        }
+
+        .month-tag {
+            background: #f3f4f6;
+            color: #4b5563;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .user-tag {
+            background: #ecfdf5;
+            color: #065f46;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 11px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .time-tag {
+            color: #9ca3af;
+            font-size: 11px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Copy Button */
+        .btn-copy-code {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .btn-copy-code:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            transform: scale(1.02);
+        }
+
+        .btn-copy-code.copied {
+            background: var(--used-color) !important;
+            border-color: var(--used-color) !important;
+            color: white !important;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #9ca3af;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .empty-state i {
+            font-size: 40px;
+            opacity: 0.4;
+        }
+
+        .empty-state p {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        /* Loading Skeleton */
+        .loading-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 50px 20px;
+            gap: 14px;
+            color: var(--primary);
+        }
+
+        .spinner {
+            width: 38px;
+            height: 38px;
+            border: 4px solid #e0e7ff;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast notification */
+        #toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #1e293b;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 15px;
+            font-weight: 700;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 9999;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            pointer-events: none;
+        }
+
+        #toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        #toast i {
+            color: #34d399;
+            font-size: 18px;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 1024px) {
+            .split-view-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .control-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .control-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+
+            .header-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .header-nav {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Main App Wrapper for Auth -->
+    <div id="page-wrapper" style="display: none;">
+
+        <!-- Header -->
+        <header>
+            <div class="header-container">
+                <div class="header-title-box">
+                    <div class="header-icon">
+                        <i class="fas fa-barcode"></i>
+                    </div>
+                    <div class="header-text">
+                        <h1>استعراض ومتابعة أكواد المدرسين</h1>
+                        <p id="auth-user-badge">لوحة متابعة الأكواد المستخدمة والغير مستخدمة</p>
+                    </div>
+                </div>
+
+                <div class="header-nav">
+                    <a href="make code.html" class="nav-btn">
+                        <i class="fas fa-plus-circle"></i> إنشاء أكواد
+                    </a>
+                    <a href="active.html" class="nav-btn">
+                        <i class="fas fa-user-graduate"></i> الطلاب
+                    </a>
+                    <a href="dashboard.html" class="nav-btn">
+                        <i class="fas fa-chart-pie"></i> الإحصائيات
+                    </a>
+                    <a href="admin.html" class="nav-btn">
+                        <i class="fas fa-arrow-right"></i> لوحة الإدارة
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <div class="container">
+
+            <!-- Controls / Filters -->
+            <div class="control-card">
+                <div class="control-grid">
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="teacher-select">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                            اختر المدرس / السيرفر
+                        </label>
+                        <select id="teacher-select" class="form-select">
+                            <option value="" disabled selected>جاري تحميل المدرسين...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="month-filter">
+                            <i class="fas fa-calendar-alt"></i>
+                            فلترة حسب الشهر
+                        </label>
+                        <select id="month-filter" class="form-select">
+                            <option value="ALL">جميع الشهور</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="search-input">
+                            <i class="fas fa-search"></i>
+                            بحث سريع بالأرقام
+                        </label>
+                        <div class="search-wrapper">
+                            <input type="text" id="search-input" class="form-input" placeholder="اكتب رقم الكود...">
+                            <i class="fas fa-search"></i>
+                        </div>
+                    </div>
+
+                    <div>
+                        <button id="refresh-btn" class="btn-refresh" title="تحديث البيانات من السيرفر">
+                            <i class="fas fa-sync-alt"></i>
+                            <span>تحديث</span>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="stats-container">
+                <div class="stat-card total">
+                    <div class="stat-icon">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <div class="stat-details">
+                        <div class="stat-title">إجمالي الأكواد للمدرس المختار</div>
+                        <div class="stat-value" id="stat-total">0</div>
+                        <div class="stat-percent" id="stat-teacher-name" style="color: var(--primary);">مدرس 1</div>
+                    </div>
+                </div>
+
+                <div class="stat-card used">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-details">
+                        <div class="stat-title">الأكواد المستخدمة (المفعلة)</div>
+                        <div class="stat-value" id="stat-used" style="color: var(--used-color);">0</div>
+                        <div class="stat-percent" id="stat-used-pct" style="color: var(--used-color);">0% من الإجمالي</div>
+                    </div>
+                </div>
+
+                <div class="stat-card unused">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-details">
+                        <div class="stat-title">الأكواد غير المستخدمة (المتاحة)</div>
+                        <div class="stat-value" id="stat-unused" style="color: var(--unused-color);">0</div>
+                        <div class="stat-percent" id="stat-unused-pct" style="color: var(--unused-color);">0% من الإجمالي</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Split View: Two Halves -->
+            <div class="split-view-grid">
+
+                <!-- Left/Right Half 1: Used Codes -->
+                <div class="column-card">
+                    <div class="column-header used-header">
+                        <div class="column-title-wrap">
+                            <div class="column-title">
+                                <i class="fas fa-check-double"></i>
+                                <span>الأكواد المستخدمة</span>
+                            </div>
+                            <span class="column-badge" id="used-count-badge">0 كود</span>
+                        </div>
+
+                        <div class="column-actions">
+                            <button id="copy-all-used-btn" class="btn-action btn-copy-all" title="نسخ جميع الأكواد المستخدمة الظاهرة">
+                                <i class="fas fa-copy"></i>
+                                <span>نسخ الكل</span>
+                            </button>
+                            <button id="export-used-btn" class="btn-action btn-export" title="تصدير الأكواد المستخدمة كملف نصي">
+                                <i class="fas fa-download"></i>
+                                <span>تصدير</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="used-codes-list" class="codes-list-container">
+                        <div class="loading-box">
+                            <div class="spinner"></div>
+                            <span>جاري جلب الأكواد...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Left/Right Half 2: Unused Codes -->
+                <div class="column-card">
+                    <div class="column-header unused-header">
+                        <div class="column-title-wrap">
+                            <div class="column-title">
+                                <i class="fas fa-hourglass-half"></i>
+                                <span>الأكواد غير المستخدمة</span>
+                            </div>
+                            <span class="column-badge" id="unused-count-badge">0 كود</span>
+                        </div>
+
+                        <div class="column-actions">
+                            <button id="copy-all-unused-btn" class="btn-action btn-copy-all" title="نسخ جميع الأكواد المتاحة الظاهرة">
+                                <i class="fas fa-copy"></i>
+                                <span>نسخ الكل</span>
+                            </button>
+                            <button id="export-unused-btn" class="btn-action btn-export" title="تصدير الأكواد المتاحة كملف نصي">
+                                <i class="fas fa-download"></i>
+                                <span>تصدير</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="unused-codes-list" class="codes-list-container">
+                        <div class="loading-box">
+                            <div class="spinner"></div>
+                            <span>جاري جلب الأكواد...</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Toast -->
+    <div id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toast-text">تم نسخ الكود بنجاح</span>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+
+    <script>
+        // ==========================================
+        // Firebase Config & Init
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: 'AIzaSyCdqYrVFspJ4rZwidfaPtc9PYpNlQQm09k',
+            authDomain: 'amgg-81ac3.firebaseapp.com',
+            databaseURL: 'https://amgg-81ac3-default-rtdb.firebaseio.com',
+            projectId: 'amgg-81ac3',
+            storageBucket: 'amgg-81ac3.firebasestorage.app',
+            messagingSenderId: '284879336757',
+            appId: '1:284879336757:web:1f42836c2382d11b73087c'
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        // State Variables
+        let rawCodesObj = {};
+        let rawMonthsObj = {};
+        let rawUsersObj = {};
+        let currentSelectedTeacher = localStorage.getItem('selectedTeacher') || 'مدرس 1';
+        let isAdminUser = false;
+        let allowedTeachersList = [];
+
+        // DOM Elements
+        const pageWrapper = document.getElementById('page-wrapper');
+        const teacherSelect = document.getElementById('teacher-select');
+        const monthFilter = document.getElementById('month-filter');
+        const searchInput = document.getElementById('search-input');
+        const refreshBtn = document.getElementById('refresh-btn');
+        const authUserBadge = document.getElementById('auth-user-badge');
+
+        const statTotal = document.getElementById('stat-total');
+        const statTeacherName = document.getElementById('stat-teacher-name');
+        const statUsed = document.getElementById('stat-used');
+        const statUsedPct = document.getElementById('stat-used-pct');
+        const statUnused = document.getElementById('stat-unused');
+        const statUnusedPct = document.getElementById('stat-unused-pct');
+
+        const usedCountBadge = document.getElementById('used-count-badge');
+        const unusedCountBadge = document.getElementById('unused-count-badge');
+        const usedCodesList = document.getElementById('used-codes-list');
+        const unusedCodesList = document.getElementById('unused-codes-list');
+
+        const copyAllUsedBtn = document.getElementById('copy-all-used-btn');
+        const copyAllUnusedBtn = document.getElementById('copy-all-unused-btn');
+        const exportUsedBtn = document.getElementById('export-used-btn');
+        const exportUnusedBtn = document.getElementById('export-unused-btn');
+
+        // Filtered Lists cache for bulk copy/export
+        let displayedUsedCodes = [];
+        let displayedUnusedCodes = [];
+
+        // ==========================================
+        // Auth Guard
+        // ==========================================
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                try {
+                    const adminSnap = await database.ref(`admins/${user.uid}`).once('value');
+                    const teaSnap = await database.ref(`tea/${user.uid}`).once('value');
+
+                    if (adminSnap.exists()) {
+                        isAdminUser = true;
+                        authUserBadge.textContent = 'صلاحية المشرف العام';
+                        setupTeacherDropdown(null);
+                    } else if (teaSnap.exists()) {
+                        const rawVal = teaSnap.val();
+                        allowedTeachersList = rawVal.split('.').map(t => t.trim()).filter(Boolean);
+                        authUserBadge.textContent = `حساب مدرس: ${user.email}`;
+                        setupTeacherDropdown(allowedTeachersList);
+                    } else {
+                        alert('ليس لديك صلاحيات الوصول لهذه الصفحة.');
+                        auth.signOut();
+                        window.location.href = 'index.html';
+                        return;
+                    }
+
+                    pageWrapper.style.display = 'block';
+                    loadDataFromDatabase();
+
+                } catch (err) {
+                    console.error('Error during auth check:', err);
+                    alert('حدث خطأ أثناء التحقق من الصلاحيات.');
+                }
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        // ==========================================
+        // Setup Teacher Select Dropdown
+        // ==========================================
+        function setupTeacherDropdown(customTeachers) {
+            teacherSelect.innerHTML = '';
+
+            let teachers = [];
+            if (isAdminUser || !customTeachers) {
+                for (let i = 1; i <= 25; i++) {
+                    teachers.push(`مدرس ${i}`);
+                }
+            } else {
+                teachers = customTeachers;
+            }
+
+            teachers.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t;
+                opt.textContent = t;
+                teacherSelect.appendChild(opt);
+            });
+
+            if (!teachers.includes(currentSelectedTeacher)) {
+                currentSelectedTeacher = teachers[0] || 'مدرس 1';
+            }
+
+            teacherSelect.value = currentSelectedTeacher;
+            localStorage.setItem('selectedTeacher', currentSelectedTeacher);
+        }
+
+        // ==========================================
+        // Load Data from Database
+        // ==========================================
+        async function loadDataFromDatabase() {
+            setListLoadingState(true);
+            refreshBtn.classList.add('fa-spin');
+
+            try {
+                const [codesSnap, monthsSnap, usersSnap] = await Promise.all([
+                    database.ref('codes').once('value'),
+                    database.ref('months').once('value'),
+                    database.ref('users').once('value')
+                ]);
+
+                rawCodesObj = codesSnap.val() || {};
+                rawMonthsObj = monthsSnap.val() || {};
+                rawUsersObj = usersSnap.val() || {};
+
+                updateMonthFilterOptions();
+                renderAll();
+
+            } catch (err) {
+                console.error('Error loading data:', err);
+                showToast('فشل في جلب البيانات من السيرفر', 'danger');
+                usedCodesList.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>حدث خطأ أثناء تحميل البيانات</p></div>`;
+                unusedCodesList.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>حدث خطأ أثناء تحميل البيانات</p></div>`;
+            } finally {
+                refreshBtn.classList.remove('fa-spin');
+            }
+        }
+
+        function setListLoadingState(isLoading) {
+            if (isLoading) {
+                const loadingHtml = `
+                    <div class="loading-box">
+                        <div class="spinner"></div>
+                        <span>جاري تحميل الأكواد...</span>
+                    </div>
+                `;
+                usedCodesList.innerHTML = loadingHtml;
+                unusedCodesList.innerHTML = loadingHtml;
+            }
+        }
+
+        // ==========================================
+        // Populate Month Filter
+        // ==========================================
+        function updateMonthFilterOptions() {
+            const currentTeacher = teacherSelect.value;
+            const teacherMonths = rawMonthsObj[currentTeacher] || {};
+            
+            const prevSelectedMonth = monthFilter.value;
+            monthFilter.innerHTML = '<option value="ALL">جميع الشهور</option>';
+
+            const monthsArray = Object.entries(teacherMonths).map(([mId, mData]) => ({
+                id: mId,
+                name: mData.name || 'شهر بدون اسم',
+                order: mData.order || 999
+            })).sort((a, b) => a.order - b.order);
+
+            monthsArray.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.id;
+                opt.textContent = m.name;
+                monthFilter.appendChild(opt);
+            });
+
+            if (prevSelectedMonth && Array.from(monthFilter.options).some(o => o.value === prevSelectedMonth)) {
+                monthFilter.value = prevSelectedMonth;
+            } else {
+                monthFilter.value = 'ALL';
+            }
+        }
+
+        // ==========================================
+        // Helper: Resolve Month Names
+        // ==========================================
+        function getMonthNames(monthIds, teacher) {
+            if (!monthIds || !Array.isArray(monthIds) || monthIds.length === 0) {
+                return ['غير محدد'];
+            }
+            const teacherMonths = rawMonthsObj[teacher] || {};
+            return monthIds.map(mId => {
+                if (teacherMonths[mId] && teacherMonths[mId].name) {
+                    return teacherMonths[mId].name;
+                }
+                // Check across all teachers if moved
+                for (const tKey in rawMonthsObj) {
+                    if (rawMonthsObj[tKey][mId] && rawMonthsObj[tKey][mId].name) {
+                        return rawMonthsObj[tKey][mId].name;
+                    }
+                }
+                return 'شهر ' + mId.substring(0, 5);
+            });
+        }
+
+        // Helper: Resolve User Info
+        function getUserInfo(uid) {
+            if (!uid) return null;
+            if (rawUsersObj[uid]) {
+                const u = rawUsersObj[uid];
+                return u.email || u.phone || u.name || uid;
+            }
+            return uid;
+        }
+
+        // ==========================================
+        // Main Render Function
+        // ==========================================
+        function renderAll() {
+            const selectedTeacher = teacherSelect.value;
+            const selectedMonth = monthFilter.value;
+            const searchTerm = searchInput.value.trim().toLowerCase();
+
+            statTeacherName.textContent = selectedTeacher;
+
+            const usedList = [];
+            const unusedList = [];
+
+            // Filter all codes matching the selected teacher
+            for (const [codeKey, codeData] of Object.entries(rawCodesObj)) {
+                if (!codeData) continue;
+
+                // Match Teacher / Server
+                const codeServer = codeData.server || '';
+                if (codeServer !== selectedTeacher) {
+                    continue;
+                }
+
+                // Match Month Filter
+                if (selectedMonth !== 'ALL') {
+                    const codeMonths = codeData.months || [];
+                    if (!codeMonths.includes(selectedMonth)) {
+                        continue;
+                    }
+                }
+
+                // Match Search Query
+                if (searchTerm) {
+                    const codeMatches = codeKey.toLowerCase().includes(searchTerm);
+                    const userMatch = codeData.usedBy && codeData.usedBy.toLowerCase().includes(searchTerm);
+                    const emailMatch = rawUsersObj[codeData.usedBy]?.email?.toLowerCase().includes(searchTerm);
+                    if (!codeMatches && !userMatch && !emailMatch) {
+                        continue;
+                    }
+                }
+
+                const item = {
+                    code: codeKey,
+                    ...codeData
+                };
+
+                if (codeData.isUsed === true) {
+                    usedList.push(item);
+                } else {
+                    unusedList.push(item);
+                }
+            }
+
+            // Cache for bulk buttons
+            displayedUsedCodes = usedList;
+            displayedUnusedCodes = unusedList;
+
+            // Update Stats
+            const totalCount = usedList.length + unusedList.length;
+            statTotal.textContent = totalCount.toLocaleString();
+            statUsed.textContent = usedList.length.toLocaleString();
+            statUnused.textContent = unusedList.length.toLocaleString();
+
+            const usedPct = totalCount > 0 ? Math.round((usedList.length / totalCount) * 100) : 0;
+            const unusedPct = totalCount > 0 ? (100 - usedPct) : 0;
+
+            statUsedPct.textContent = `${usedPct}% من إجمالي الأكواد`;
+            statUnusedPct.textContent = `${unusedPct}% من إجمالي الأكواد`;
+
+            usedCountBadge.textContent = `${usedList.length} كود`;
+            unusedCountBadge.textContent = `${unusedList.length} كود`;
+
+            // Render Used Codes Column
+            renderUsedList(usedList, selectedTeacher);
+
+            // Render Unused Codes Column
+            renderUnusedList(unusedList, selectedTeacher);
+        }
+
+        // ==========================================
+        // Render Used Codes List
+        // ==========================================
+        function renderUsedList(codes, teacher) {
+            if (codes.length === 0) {
+                usedCodesList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>لا توجد أكواد مستخدمة مطابقة للبحث</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            codes.forEach((item, index) => {
+                const monthNames = getMonthNames(item.months, teacher);
+                const userInfo = getUserInfo(item.usedBy);
+                const userDisplay = userInfo ? `<span class="user-tag" title="مستخدم بواسطة: ${userInfo}"><i class="fas fa-user-check"></i> ${escapeHtml(userInfo)}</span>` : '';
+                const monthsDisplay = monthNames.map(m => `<span class="month-tag"><i class="far fa-calendar-check"></i> ${escapeHtml(m)}</span>`).join(' ');
+
+                html += `
+                    <div class="code-item used-item">
+                        <div class="code-info">
+                            <div class="code-main-line">
+                                <span class="code-index">#${index + 1}</span>
+                                <span class="code-text">${escapeHtml(item.code)}</span>
+                            </div>
+                            <div class="code-meta">
+                                ${monthsDisplay}
+                                ${userDisplay}
+                            </div>
+                        </div>
+                        <button class="btn-copy-code" onclick="copySingleCode('${escapeHtml(item.code)}', this)" title="نسخ الكود">
+                            <i class="fas fa-copy"></i>
+                            <span>نسخ</span>
+                        </button>
+                    </div>
+                `;
+            });
+
+            usedCodesList.innerHTML = html;
+        }
+
+        // ==========================================
+        // Render Unused Codes List
+        // ==========================================
+        function renderUnusedList(codes, teacher) {
+            if (codes.length === 0) {
+                unusedCodesList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-folder-open"></i>
+                        <p>لا توجد أكواد غير مستخدمة (متاحة)</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            codes.forEach((item, index) => {
+                const monthNames = getMonthNames(item.months, teacher);
+                const monthsDisplay = monthNames.map(m => `<span class="month-tag"><i class="far fa-calendar-alt"></i> ${escapeHtml(m)}</span>`).join(' ');
+
+                html += `
+                    <div class="code-item unused-item">
+                        <div class="code-info">
+                            <div class="code-main-line">
+                                <span class="code-index">#${index + 1}</span>
+                                <span class="code-text">${escapeHtml(item.code)}</span>
+                            </div>
+                            <div class="code-meta">
+                                ${monthsDisplay}
+                                <span class="month-tag" style="background: #fef3c7; color: #92400e;">
+                                    <i class="fas fa-bolt"></i> متاح للتفعيل
+                                </span>
+                            </div>
+                        </div>
+                        <button class="btn-copy-code" onclick="copySingleCode('${escapeHtml(item.code)}', this)" title="نسخ الكود">
+                            <i class="fas fa-copy"></i>
+                            <span>نسخ</span>
+                        </button>
+                    </div>
+                `;
+            });
+
+            unusedCodesList.innerHTML = html;
+        }
+
+        // ==========================================
+        // Copy Functions & Clipboard
+        // ==========================================
+        window.copySingleCode = function(code, btnElem) {
+            navigator.clipboard.writeText(code).then(() => {
+                const originalHtml = btnElem.innerHTML;
+                btnElem.classList.add('copied');
+                btnElem.innerHTML = `<i class="fas fa-check"></i> <span>تم النسخ!</span>`;
+                showToast(`تم نسخ الكود: ${code}`);
+
+                setTimeout(() => {
+                    btnElem.classList.remove('copied');
+                    btnElem.innerHTML = originalHtml;
+                }, 1800);
+            }).catch(err => {
+                console.error('Copy failed:', err);
+                showToast('تعذر النسخ إلى الحافظة', 'danger');
+            });
+        };
+
+        function copyBulkCodes(codesArray, label) {
+            if (!codesArray || codesArray.length === 0) {
+                showToast(`لا توجد أكواد ${label} لنسخها`, 'danger');
+                return;
+            }
+
+            const rawText = codesArray.map(item => item.code).join('\n');
+            navigator.clipboard.writeText(rawText).then(() => {
+                showToast(`تم نسخ ${codesArray.length} كود ${label} بنجاح!`);
+            }).catch(err => {
+                console.error('Bulk copy failed:', err);
+                showToast('تعذر النسخ', 'danger');
+            });
+        }
+
+        function exportCodesToTxt(codesArray, label) {
+            if (!codesArray || codesArray.length === 0) {
+                showToast(`لا توجد أكواد ${label} للتصدير`, 'danger');
+                return;
+            }
+
+            const teacherName = teacherSelect.value;
+            const content = `# أكواد ${label} - ${teacherName}\n# التاريخ: ${new Date().toLocaleString('ar-EG')}\n# الإجمالي: ${codesArray.length}\n\n` +
+                codesArray.map(c => c.code).join('\n');
+
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${teacherName}_${label}_${Date.now()}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast(`تم تنزيل ملف أكواد ${label}`);
+        }
+
+        // ==========================================
+        // Toast Notification
+        // ==========================================
+        let toastTimeout;
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastText = document.getElementById('toast-text');
+            const icon = toast.querySelector('i');
+
+            if (type === 'danger') {
+                icon.className = 'fas fa-exclamation-circle';
+                icon.style.color = '#ef4444';
+            } else {
+                icon.className = 'fas fa-check-circle';
+                icon.style.color = '#34d399';
+            }
+
+            toastText.textContent = message;
+            toast.classList.add('show');
+
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+
+        // Utility: Escape HTML
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // ==========================================
+        // Event Listeners
+        // ==========================================
+        teacherSelect.addEventListener('change', () => {
+            currentSelectedTeacher = teacherSelect.value;
+            localStorage.setItem('selectedTeacher', currentSelectedTeacher);
+            updateMonthFilterOptions();
+            renderAll();
+        });
+
+        monthFilter.addEventListener('change', renderAll);
+        searchInput.addEventListener('input', renderAll);
+        refreshBtn.addEventListener('click', loadDataFromDatabase);
+
+        copyAllUsedBtn.addEventListener('click', () => copyBulkCodes(displayedUsedCodes, 'المستخدمة'));
+        copyAllUnusedBtn.addEventListener('click', () => copyBulkCodes(displayedUnusedCodes, 'غير المستخدمة'));
+        exportUsedBtn.addEventListener('click', () => exportCodesToTxt(displayedUsedCodes, 'مستخدمة'));
+        exportUnusedBtn.addEventListener('click', () => exportCodesToTxt(displayedUnusedCodes, 'غير_مستخدمة'));
+
+    </script>
+</body>
+</html>
