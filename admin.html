@@ -1071,15 +1071,83 @@
                 return teachersList.map(t => `<option value="${t}" ${t === currentTeacher ? 'selected' : ''}>${t}</option>`).join('');
             }
 
+            async function syncStudentMonthsOnTeacherTransfer(userId, oldTeacher, newTeacher) {
+                if (!oldTeacher || !newTeacher || oldTeacher === newTeacher) return;
+                try {
+                    const [oldLinksSnap, newLinksSnap] = await Promise.all([
+                        database.ref(`teacher_links/${oldTeacher}`).once('value'),
+                        database.ref(`teacher_links/${newTeacher}`).once('value')
+                    ]);
+
+                    let isLinked = false;
+                    if (oldLinksSnap.exists()) {
+                        const val = oldLinksSnap.val();
+                        const list = Array.isArray(val) ? val : (typeof val === 'object' ? Object.keys(val) : [val]);
+                        if (list.includes(newTeacher)) isLinked = true;
+                    }
+                    if (!isLinked && newLinksSnap.exists()) {
+                        const val = newLinksSnap.val();
+                        const list = Array.isArray(val) ? val : (typeof val === 'object' ? Object.keys(val) : [val]);
+                        if (list.includes(oldTeacher)) isLinked = true;
+                    }
+
+                    if (isLinked) {
+                        const [accessSnap, oldMonthsSnap, newMonthsSnap] = await Promise.all([
+                            database.ref(`student_month_access/${userId}`).once('value'),
+                            database.ref(`months/${oldTeacher}`).once('value'),
+                            database.ref(`months/${newTeacher}`).once('value')
+                        ]);
+
+                        const userAccess = accessSnap.val() || {};
+                        const oldMonths = oldMonthsSnap.val() || {};
+                        const newMonths = newMonthsSnap.val() || {};
+                        const now = Date.now();
+                        const monthUpdates = {};
+
+                        const newMonthsByName = {};
+                        for (const [newMId, newMData] of Object.entries(newMonths)) {
+                            if (newMData && newMData.name) {
+                                const norm = newMData.name.trim().toLowerCase();
+                                newMonthsByName[norm] = newMId;
+                            }
+                        }
+
+                        for (const [oldMId, oldMData] of Object.entries(oldMonths)) {
+                            if (oldMData && oldMData.name && userAccess[oldMId]) {
+                                const oldExpiry = userAccess[oldMId];
+                                if (oldExpiry && oldExpiry > now) {
+                                    const norm = oldMData.name.trim().toLowerCase();
+                                    const matchingNewMId = newMonthsByName[norm];
+                                    if (matchingNewMId) {
+                                        const currentTargetExpiry = userAccess[matchingNewMId] || 0;
+                                        if (oldExpiry > currentTargetExpiry) {
+                                            monthUpdates[`student_month_access/${userId}/${matchingNewMId}`] = oldExpiry;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (Object.keys(monthUpdates).length > 0) {
+                            await database.ref().update(monthUpdates);
+                        }
+                    }
+                } catch (err) {
+                    console.error("Error syncing student months on transfer:", err);
+                }
+            }
+
             window.changeUserTeacherDirectly = async function(userId, newTeacher) {
                 const spinner = document.getElementById(`teacher-spinner-${userId}`);
                 const selectElem = document.getElementById(`teacher-select-${userId}`);
+                const oldTeacher = allUsersData[userId] ? (allUsersData[userId].year || 'مدرس 1') : null;
                 
                 if (spinner) spinner.style.display = 'inline-block';
                 if (selectElem) selectElem.disabled = true;
 
                 try {
                     await database.ref(`users/${userId}`).update({ year: newTeacher });
+                    await syncStudentMonthsOnTeacherTransfer(userId, oldTeacher, newTeacher);
                     showToast(`تم تغيير مدرس الطالب إلى "${newTeacher}" بنجاح`, 'success');
                     updateLocalUserAndRefresh(userId, { year: newTeacher });
                 } catch (error) {
@@ -1130,6 +1198,7 @@
                 const newDate = document.getElementById('edit-disable-date').value;
                 const newTime = document.getElementById('edit-disable-time').value;
                 const confirmBtn = document.getElementById('confirm-edit-btn');
+                const oldTeacher = allUsersData[userId] ? (allUsersData[userId].year || 'مدرس 1') : null;
                 
                 confirmBtn.disabled = true;
                 let disableTimestamp = null;
@@ -1142,6 +1211,9 @@
                 }
                 try {
                     await database.ref(`users/${userId}`).update(updates);
+                    if (newTeacher && oldTeacher && newTeacher !== oldTeacher) {
+                        await syncStudentMonthsOnTeacherTransfer(userId, oldTeacher, newTeacher);
+                    }
                     showToast('تم حفظ التعديلات بنجاح');
                     closeModal('edit-user-modal');
                     updateLocalUserAndRefresh(userId, updates);

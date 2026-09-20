@@ -466,6 +466,7 @@
                     const userAccess = accessObj[uid] || {};
                     let latestActivation = 0;
 
+                    const dedupedMonthsMap = new Map();
                     for (const [monthId, monthInfo] of Object.entries(monthDetailsMap)) {
                         if (allowedYears.includes(monthInfo.teacher)) {
                             let expiryDate = userAccess[monthId];
@@ -475,24 +476,47 @@
                             if (expiryDate !== undefined && expiryDate !== null) {
                                 isActivated = true;
                                 remainingDays = Math.ceil((expiryDate - now) / ONE_DAY_MS);
-                                
-                                if (remainingDays > 0) {
-                                    const activationDate = expiryDate - THIRTY_DAYS_MS;
-                                    if (activationDate > latestActivation) {
-                                        latestActivation = activationDate;
-                                    }
-                                } else {
-                                    remainingDays = 0; 
-                                }
+                                if (remainingDays < 0) remainingDays = 0;
                             }
 
-                            activeMonthsList.push({
+                            const normName = (monthInfo.name || '').trim().toLowerCase();
+                            const isCurrent = (monthInfo.teacher === userData.year);
+                            const candidate = {
                                 id: monthId,
                                 name: monthInfo.name,
+                                teacher: monthInfo.teacher,
                                 days: remainingDays,
-                                isActivated: isActivated
-                            });
+                                isActivated: isActivated,
+                                expiryDate: expiryDate,
+                                isCurrent: isCurrent
+                            };
+
+                            if (!dedupedMonthsMap.has(normName)) {
+                                dedupedMonthsMap.set(normName, candidate);
+                            } else {
+                                const existing = dedupedMonthsMap.get(normName);
+                                if (isCurrent && !existing.isCurrent) {
+                                    dedupedMonthsMap.set(normName, candidate);
+                                } else if (isCurrent === existing.isCurrent && (expiryDate || 0) > (existing.expiryDate || 0)) {
+                                    dedupedMonthsMap.set(normName, candidate);
+                                }
+                            }
                         }
+                    }
+
+                    for (const m of dedupedMonthsMap.values()) {
+                        if (m.isActivated && m.days > 0 && m.expiryDate) {
+                            const activationDate = m.expiryDate - THIRTY_DAYS_MS;
+                            if (activationDate > latestActivation) {
+                                latestActivation = activationDate;
+                            }
+                        }
+                        activeMonthsList.push({
+                            id: m.id,
+                            name: m.name,
+                            days: m.days,
+                            isActivated: m.isActivated
+                        });
                     }
 
                     if (latestActivation > 0) displayDate = latestActivation;
@@ -986,14 +1010,83 @@
             return list.map(t => `<option value="${t}" ${t === currentTeacher ? 'selected' : ''}>${t}</option>`).join('');
         }
 
+        async function syncStudentMonthsOnTeacherTransfer(userId, oldTeacher, newTeacher) {
+            if (!oldTeacher || !newTeacher || oldTeacher === newTeacher) return;
+            try {
+                const [oldLinksSnap, newLinksSnap] = await Promise.all([
+                    db.ref(`teacher_links/${oldTeacher}`).once('value'),
+                    db.ref(`teacher_links/${newTeacher}`).once('value')
+                ]);
+
+                let isLinked = false;
+                if (oldLinksSnap.exists()) {
+                    const val = oldLinksSnap.val();
+                    const list = Array.isArray(val) ? val : (typeof val === 'object' ? Object.keys(val) : [val]);
+                    if (list.includes(newTeacher)) isLinked = true;
+                }
+                if (!isLinked && newLinksSnap.exists()) {
+                    const val = newLinksSnap.val();
+                    const list = Array.isArray(val) ? val : (typeof val === 'object' ? Object.keys(val) : [val]);
+                    if (list.includes(oldTeacher)) isLinked = true;
+                }
+
+                if (isLinked) {
+                    const [accessSnap, oldMonthsSnap, newMonthsSnap] = await Promise.all([
+                        db.ref(`student_month_access/${userId}`).once('value'),
+                        db.ref(`months/${oldTeacher}`).once('value'),
+                        db.ref(`months/${newTeacher}`).once('value')
+                    ]);
+
+                    const userAccess = accessSnap.val() || {};
+                    const oldMonths = oldMonthsSnap.val() || {};
+                    const newMonths = newMonthsSnap.val() || {};
+                    const now = Date.now();
+                    const monthUpdates = {};
+
+                    const newMonthsByName = {};
+                    for (const [newMId, newMData] of Object.entries(newMonths)) {
+                        if (newMData && newMData.name) {
+                            const norm = newMData.name.trim().toLowerCase();
+                            newMonthsByName[norm] = newMId;
+                        }
+                    }
+
+                    for (const [oldMId, oldMData] of Object.entries(oldMonths)) {
+                        if (oldMData && oldMData.name && userAccess[oldMId]) {
+                            const oldExpiry = userAccess[oldMId];
+                            if (oldExpiry && oldExpiry > now) {
+                                const norm = oldMData.name.trim().toLowerCase();
+                                const matchingNewMId = newMonthsByName[norm];
+                                if (matchingNewMId) {
+                                    const currentTargetExpiry = userAccess[matchingNewMId] || 0;
+                                    if (oldExpiry > currentTargetExpiry) {
+                                        monthUpdates[`student_month_access/${userId}/${matchingNewMId}`] = oldExpiry;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (Object.keys(monthUpdates).length > 0) {
+                        await db.ref().update(monthUpdates);
+                    }
+                }
+            } catch (err) {
+                console.error("Error syncing student months on transfer:", err);
+            }
+        }
+
         window.changeStudentTeacher = async function(uid, newTeacher) {
-            if (!newTeacher || newTeacher === activeTeacher) return;
+            const studentRow = allRowsData.find(u => u.uid === uid);
+            const oldTeacher = studentRow ? studentRow.year : activeTeacher;
+            if (!newTeacher || newTeacher === oldTeacher) return;
             if (!confirm(`هل أنت متأكد من تغيير مدرس هذا الطالب إلى "${newTeacher}"؟`)) {
                 initPage();
                 return;
             }
             try {
                 await db.ref(`users/${uid}`).update({ year: newTeacher });
+                await syncStudentMonthsOnTeacherTransfer(uid, oldTeacher, newTeacher);
                 alert(`تم نقل الطالب إلى "${newTeacher}" بنجاح`);
                 initPage();
             } catch (error) {
