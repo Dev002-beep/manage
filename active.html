@@ -407,17 +407,31 @@
         async function initPage() {
             document.getElementById('tableBody').innerHTML = '<tr><td colspan="8" class="status-msg">جاري تحميل البيانات...</td></tr>';
             try {
-                const [usersSnap, monthsSnap, accessSnap, codesSnap] = await Promise.all([
+                const [usersSnap, monthsSnap, accessSnap, codesSnap, linkSnap] = await Promise.all([
                     db.ref('users').once('value'),
                     db.ref('months').once('value'), 
                     db.ref('student_month_access').once('value'),
-                    db.ref('codes').once('value')
+                    db.ref('codes').once('value'),
+                    db.ref(`teacher_links/${activeTeacher}`).once('value')
                 ]);
 
                 const usersObj = usersSnap.val() || {};
                 const monthsObj = monthsSnap.val() || {};
                 const accessObj = accessSnap.val() || {};
                 const codesObj = codesSnap.val() || {};
+
+                // Get linked subordinate teachers
+                let linkedTeachers = [];
+                if (linkSnap && linkSnap.exists()) {
+                    const val = linkSnap.val();
+                    const list = Array.isArray(val) ? val : (typeof val === 'object' ? Object.keys(val) : [val]);
+                    list.forEach(t => {
+                        if (t && t !== activeTeacher && !linkedTeachers.includes(t)) {
+                            linkedTeachers.push(t);
+                        }
+                    });
+                }
+                const allowedYears = [activeTeacher, ...linkedTeachers];
 
                 monthDetailsMap = {};
                 for (const [tName, tMonths] of Object.entries(monthsObj)) {
@@ -443,7 +457,7 @@
                 const now = Date.now();
 
                 for (const [uid, userData] of Object.entries(usersObj)) {
-                    if (userData.year !== activeTeacher) {
+                    if (!allowedYears.includes(userData.year)) {
                         continue; 
                     }
 
@@ -453,7 +467,7 @@
                     let latestActivation = 0;
 
                     for (const [monthId, monthInfo] of Object.entries(monthDetailsMap)) {
-                        if (monthInfo.teacher === activeTeacher) {
+                        if (allowedYears.includes(monthInfo.teacher)) {
                             let expiryDate = userAccess[monthId];
                             let remainingDays = 0;
                             let isActivated = false; 
@@ -728,7 +742,17 @@
                 if(!codeSnap.exists()) return alert("هذا الكود غير موجود في النظام!");
 
                 const codeData = codeSnap.val();
-                if (codeData.server !== activeTeacher) {
+                let allowedServers = [activeTeacher];
+                try {
+                    const linkSnap = await db.ref(`teacher_links/${activeTeacher}`).once('value');
+                    if (linkSnap.exists()) {
+                        const val = linkSnap.val();
+                        const list = Array.isArray(val) ? val : (typeof val === 'object' ? Object.keys(val) : [val]);
+                        list.forEach(t => { if (t && t !== activeTeacher && !allowedServers.includes(t)) allowedServers.push(t); });
+                    }
+                } catch(e) {}
+
+                if (!allowedServers.includes(codeData.server)) {
                     return alert(`❌ خطأ: هذا الكود مخصص لـ (${codeData.server || 'غير معروف'}) ولا يمكن استخدامه لطالب في (${activeTeacher})!`);
                 }
                 if(codeData.isUsed) return alert("هذا الكود تم استخدامه من قبل!");
@@ -756,7 +780,7 @@
                     
                     monthsToActivate.forEach(monthId => {
                         const mInfo = monthDetailsMap[monthId];
-                        if (mInfo && mInfo.teacher === activeTeacher) {
+                        if (mInfo && allowedServers.includes(mInfo.teacher)) {
                             let existingMonth = studentData.activeMonths.find(m => m.id === monthId);
                             if (existingMonth) {
                                 existingMonth.days = 30;
