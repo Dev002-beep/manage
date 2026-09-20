@@ -319,6 +319,39 @@
                     <i class="fas fa-search"></i>
                     عرض المحاضرات للإدارة
                 </button>
+                
+                <div class="divider" style="height:1px; background:var(--border-color); margin:40px 0;"></div>
+                
+                <!-- Teacher Linking Section -->
+                <h3><i class="fas fa-link" style="color: var(--primary-color);"></i> ربط ومزامنة المدرسين (Auto-Sync)</h3>
+                <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 20px;">
+                    عند ربط مدرسين معاً، أي محتوى (محاضرة، بوست، امتحان) يتم نشره على المدرس الأساسي سينزل تلقائياً وبشكل فوري عند المدرس المربوط به.
+                </p>
+
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>المدرس الأساسي (المصدر)</label>
+                        <select id="linkSourceTeacher"></select>
+                    </div>
+                    <div class="input-group">
+                        <label>المدرس التابع (المستهدف للمزامنة)</label>
+                        <select id="linkTargetTeacher"></select>
+                    </div>
+                </div>
+
+                <button id="addTeacherLinkBtn" class="button" style="background-color: var(--success-color); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); margin-top: 15px;">
+                    <i class="fas fa-plus-circle"></i> إنشاء ربط ومزامنة تلقائية
+                </button>
+
+                <div id="activeLinksContainer" style="margin-top: 30px; background: var(--background-color); padding: 18px; border-radius: var(--radius); border: 1px solid var(--border-color);">
+                    <h4 style="margin: 0 0 15px 0; font-size: 16px; color: var(--text-primary); display: flex; align-items: center; justify-content: space-between;">
+                        <span><i class="fas fa-network-wired" style="color: var(--primary-color); margin-left: 6px;"></i> الروابط النشطة حالياً:</span>
+                        <span id="linksCountBadge" style="font-size: 12px; background: var(--primary-color); color: white; padding: 2px 8px; border-radius: 12px;">0</span>
+                    </h4>
+                    <div id="linksList" style="display: flex; flex-direction: column; gap: 10px;">
+                        <div style="text-align: center; color: var(--text-secondary); padding: 15px; font-size: 14px;">جاري تحميل الروابط...</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -330,7 +363,92 @@
                 <span class="close" id="closeModal" style="cursor:pointer; font-size:24px;">&times;</span>
             </div>
             <div class="modal-body" id="modalBody">
+                <div id="lecturesActionBar" style="display: none; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 12px 15px; background: var(--background-color); border-radius: var(--radius); border: 1px solid var(--border-color); flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <span style="font-weight: 700; font-size: 14px;"><i class="fas fa-layer-group" style="color: var(--primary-color); margin-left: 5px;"></i> عدد المحاضرات: <span id="lecturesCountBadge" style="color: var(--primary-color);">0</span></span>
+                    </div>
+                    <button id="copyAllLecturesBtn" class="btn-sm" style="background: var(--primary-color); color: white; display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; font-weight: 700;" onclick="openCopyModal('all')">
+                        <i class="fas fa-clone"></i> نسخ الكل (محاضرات / بوستات / امتحانات)
+                    </button>
+                </div>
                 <ul id="lecturesList" style="list-style: none; padding: 0; margin: 0;"></ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Copy Modal -->
+    <div id="copyModal" class="modal" style="z-index: 6500;">
+        <div class="modal-content" style="max-width: 520px; margin-top: 5%;">
+            <div class="modal-header">
+                <h2 id="copyModalTitle"><i class="fas fa-copy" style="margin-left: 8px; color: var(--primary-color);"></i> نسخ المحتوى</h2>
+                <span class="close" id="closeCopyModal" style="cursor:pointer; font-size: 24px;">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="copyTargetInfo" style="margin-bottom: 15px; padding: 12px; background: rgba(79, 70, 229, 0.08); border-radius: var(--radius); font-weight: 500; font-size: 14px; border-right: 4px solid var(--primary-color);">
+                </div>
+
+                <!-- Choose what to copy (Lectures, Posts, Exams) -->
+                <div id="copyTypesSection" style="margin-bottom: 20px;">
+                    <label style="font-weight: 700; display: block; margin-bottom: 10px;">اختر ما تريد نسخه:</label>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px;">
+                        <label id="copyTypeLecturesLabel" style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px 12px; border-radius: 8px; border: 2px solid var(--border-color); background: var(--background-color); transition: var(--transition); user-select: none;">
+                            <input type="checkbox" id="copyIncludeLectures" checked style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary-color);">
+                            <span><i class="fas fa-video" style="color: var(--primary-color); margin-left: 4px;"></i> محاضرات <small id="lecturesCountSpan" style="font-weight: bold; color: var(--primary-color);">(0)</small></span>
+                        </label>
+                        <label id="copyTypePostsLabel" style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px 12px; border-radius: 8px; border: 2px solid var(--border-color); background: var(--background-color); transition: var(--transition); user-select: none;">
+                            <input type="checkbox" id="copyIncludePosts" checked style="width: 18px; height: 18px; cursor: pointer; accent-color: #00CE9F;">
+                            <span><i class="fas fa-newspaper" style="color: #00CE9F; margin-left: 4px;"></i> بوستات <small id="postsCountSpan" style="font-weight: bold; color: #00CE9F;">(0)</small></span>
+                        </label>
+                        <label id="copyTypeExamsLabel" style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px 12px; border-radius: 8px; border: 2px solid var(--border-color); background: var(--background-color); transition: var(--transition); user-select: none;">
+                            <input type="checkbox" id="copyIncludeExams" checked style="width: 18px; height: 18px; cursor: pointer; accent-color: #F59E0B;">
+                            <span><i class="fas fa-file-alt" style="color: #F59E0B; margin-left: 4px;"></i> امتحانات <small id="examsCountSpan" style="font-weight: bold; color: #F59E0B;">(0)</small></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="font-weight: 700; display: block; margin-bottom: 10px;">وجهة النسخ:</label>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <label id="copyOptionHereContainer" style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 12px; border-radius: 8px; border: 2px solid var(--border-color); background: var(--background-color); transition: var(--transition);">
+                            <input type="radio" name="copyDestination" id="copyDestHere" value="here" checked style="width: auto; cursor: pointer; accent-color: var(--primary-color);">
+                            <span id="copyDestHereLabel"><strong>نسخ هنا</strong> (في نفس المدرس والشهر الحالي)</span>
+                        </label>
+                        <label id="copyOptionCustomContainer" style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 12px; border-radius: 8px; border: 2px solid var(--border-color); background: var(--background-color); transition: var(--transition);">
+                            <input type="radio" name="copyDestination" id="copyDestCustom" value="custom" style="width: auto; cursor: pointer; accent-color: var(--primary-color);">
+                            <span><strong>تحديد مدرس وشهر معين</strong></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="customDestSection" style="display: none; padding: 15px; background: var(--background-color); border-radius: var(--radius); border: 1px solid var(--border-color); margin-bottom: 20px;">
+                    <div class="input-group" style="margin-bottom: 15px;">
+                        <label>المدرس المستهدف</label>
+                        <select id="copyTargetTeacherSelect"></select>
+                    </div>
+                    <div class="input-group">
+                        <label>الشهر المستهدف</label>
+                        <select id="copyTargetMonthSelect"></select>
+                    </div>
+                </div>
+
+                <div id="copyProgressContainer" style="display: none; margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px;">
+                        <span id="copyProgressText">جاري النسخ...</span>
+                        <span id="copyProgressPercent">0%</span>
+                    </div>
+                    <div style="width: 100%; height: 8px; background: var(--border-color); border-radius: 4px; overflow: hidden;">
+                        <div id="copyProgressBar" style="width: 0%; height: 100%; background: var(--primary-color); transition: width 0.2s;"></div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button id="confirmCopyBtn" class="button upload-btn" style="flex: 1; margin-top: 0;">
+                        <i class="fas fa-check"></i> <span id="confirmCopyText">بدء النسخ</span>
+                    </button>
+                    <button id="cancelCopyBtn" class="button" style="width: auto; background: var(--border-color); color: var(--text-primary); margin-top: 0; padding: 16px 20px;">
+                        إلغاء
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -462,6 +580,90 @@
             loadMonths(yearSelect.value, monthSelect);
             loadMonths(deleteYearSelect.value, deleteMonthSelect);
 
+            // Populate Teacher Link selects
+            const linkSourceSelect = document.getElementById('linkSourceTeacher');
+            const linkTargetSelect = document.getElementById('linkTargetTeacher');
+            linkSourceSelect.innerHTML = '';
+            linkTargetSelect.innerHTML = '';
+            teacherList.forEach(t => {
+                linkSourceSelect.add(new Option(t, t));
+                linkTargetSelect.add(new Option(t, t));
+            });
+            if (teacherList.length > 1) {
+                linkTargetSelect.selectedIndex = 1;
+            }
+
+            // Load and render teacher links in realtime
+            function loadTeacherLinks() {
+                const container = document.getElementById('linksList');
+                const countBadge = document.getElementById('linksCountBadge');
+                database.ref('teacher_links').on('value', snap => {
+                    container.innerHTML = '';
+                    if (!snap.exists()) {
+                        container.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 15px; font-size: 14px;"><i class="fas fa-info-circle"></i> لا توجد روابط نشطة حالياً. اختر مدرسين بالأعلى للربط بينهما.</div>';
+                        if (countBadge) countBadge.textContent = '0';
+                        return;
+                    }
+
+                    const data = snap.val();
+                    let linkCount = 0;
+
+                    Object.entries(data).forEach(([source, targets]) => {
+                        const targetList = Array.isArray(targets) ? targets : (typeof targets === 'object' ? Object.keys(targets) : [targets]);
+                        targetList.forEach(target => {
+                            if (!target || target === source) return;
+                            linkCount++;
+                            const div = document.createElement('div');
+                            div.style.cssText = "display: flex; justify-content: space-between; align-items: center; background: var(--surface-color); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);";
+                            div.innerHTML = `
+                                <div style="display: flex; align-items: center; gap: 12px; font-weight: bold;">
+                                    <span style="color: var(--primary-color);"><i class="fas fa-user-tie"></i> ${source}</span>
+                                    <i class="fas fa-arrow-left" style="color: var(--success-color); font-size: 14px;"></i>
+                                    <span style="color: var(--success-color);"><i class="fas fa-sync-alt"></i> ${target}</span>
+                                    <small style="font-weight: normal; font-size: 12px; color: var(--text-secondary);">(مزامنة فورية)</small>
+                                </div>
+                                <button class="btn-sm btn-danger" onclick="removeTeacherLink('${source}', '${target}')" style="padding: 6px 12px; font-size: 13px;">
+                                    <i class="fas fa-unlink"></i> إلغاء الربط
+                                </button>
+                            `;
+                            container.appendChild(div);
+                        });
+                    });
+
+                    if (countBadge) countBadge.textContent = linkCount;
+                    if (linkCount === 0) {
+                        container.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 15px; font-size: 14px;"><i class="fas fa-info-circle"></i> لا توجد روابط نشطة حالياً.</div>';
+                    }
+                });
+            }
+            loadTeacherLinks();
+
+            // Add Link Handler
+            document.getElementById('addTeacherLinkBtn').onclick = async () => {
+                const src = linkSourceSelect.value;
+                const tgt = linkTargetSelect.value;
+
+                if (!src || !tgt) return alert("يرجى اختيار المدرس المصدر والمدرس المستهدف.");
+                if (src === tgt) return alert("لا يمكن ربط المدرس بنفسه! يرجى اختيار مدرس آخر.");
+
+                try {
+                    await database.ref(`teacher_links/${src}/${tgt}`).set(true);
+                    showToast(`تم ربط ${src} مع ${tgt} بنجاح!`);
+                } catch (e) {
+                    alert("فشل إنشاء الربط: " + e.message);
+                }
+            };
+
+            window.removeTeacherLink = async (source, target) => {
+                if (!confirm(`هل أنت متأكد من إلغاء الربط بين ${source} و ${target}؟`)) return;
+                try {
+                    await database.ref(`teacher_links/${source}/${target}`).remove();
+                    showToast(`تم إلغاء الربط بين ${source} و ${target}`);
+                } catch (e) {
+                    alert("فشل إلغاء الربط: " + e.message);
+                }
+            };
+
             // --- Upload Logic ---
             document.getElementById('videoFile').onchange = (e) => {
                 document.getElementById('videoFileName').textContent = e.target.files[0]?.name || 'اضغط لاختيار فيديو';
@@ -501,12 +703,36 @@
                         ? `lectures/${yearSelect.value}/${id}` 
                         : `lectures/${yearSelect.value}/${monthSelect.value}/${id}`;
 
-                    await database.ref(dbRef).set({
+                    const lecturePayload = {
                         id, title, lectureNumber: num, year: yearSelect.value,
                         month: monthSelect.value, videoPath: path, logoPath, timestamp: id
-                    });
+                    };
 
-                    alert("تم الرفع بنجاح");
+                    await database.ref(dbRef).set(lecturePayload);
+
+                    // Auto-sync to linked teachers
+                    try {
+                        const linkSnap = await database.ref(`teacher_links/${yearSelect.value}`).once('value');
+                        if (linkSnap.exists()) {
+                            const linked = linkSnap.val();
+                            const targets = Array.isArray(linked) ? linked : (typeof linked === 'object' ? Object.keys(linked) : [linked]);
+                            for (const targetTeacher of targets) {
+                                if (targetTeacher && targetTeacher !== yearSelect.value) {
+                                    const targetDbRef = monthSelect.value === '_uncategorized_' 
+                                        ? `lectures/${targetTeacher}/${id}` 
+                                        : `lectures/${targetTeacher}/${monthSelect.value}/${id}`;
+                                    await database.ref(targetDbRef).set({
+                                        ...lecturePayload,
+                                        year: targetTeacher
+                                    });
+                                }
+                            }
+                        }
+                    } catch (syncErr) {
+                        console.error("Auto sync lecture error:", syncErr);
+                    }
+
+                    alert("تم الرفع بنجاح ومزامنة المدرسين المربوطين!");
                     location.reload();
                 } catch(e) { alert("حدث خطأ: " + e.message); overlay.style.display = 'none'; }
             };
@@ -514,7 +740,11 @@
             // --- Management Logic (Delete / Edit / Display) ---
             document.getElementById('showDeleteButton').onclick = async () => {
                 const list = document.getElementById('lecturesList');
+                const actionBar = document.getElementById('lecturesActionBar');
+                const countBadge = document.getElementById('lecturesCountBadge');
+                
                 list.innerHTML = "جاري التحميل...";
+                if (actionBar) actionBar.style.display = 'none';
                 document.getElementById('deleteModal').style.display = 'block';
 
                 const path = deleteMonthSelect.value === '_uncategorized_' 
@@ -528,11 +758,13 @@
                     const data = snap.val();
                     currentLecturesData = {}; // Reset cache
                     let totalSizeMB = 0;
+                    let validCount = 0;
 
                     Object.keys(data).forEach(key => {
                         const lec = data[key];
                         if(!lec.title) return;
                         
+                        validCount++;
                         currentLecturesData[key] = lec; // Cache the data
                         const currentSize = parseFloat(lec.sizeMB) || 0;
                         totalSizeMB += currentSize;
@@ -567,6 +799,13 @@
                         list.appendChild(li);
                     });
 
+                    if (validCount > 0) {
+                        if (actionBar) actionBar.style.display = 'flex';
+                        if (countBadge) countBadge.textContent = validCount;
+                    } else {
+                        if (actionBar) actionBar.style.display = 'none';
+                    }
+
                     const totalLi = document.createElement('li');
                     totalLi.id = "totalSizeDisplay";
                     totalLi.style.cssText = "padding: 15px; margin-top: 20px; background: var(--primary-color); color: white; border-radius: 8px; text-align: center; font-size: 18px; font-weight: bold; box-shadow: var(--shadow-md); list-style: none;";
@@ -579,14 +818,35 @@
                     }
                     list.appendChild(totalLi);
 
-                } else { list.innerHTML = "لا توجد محاضرات."; }
+                } else { 
+                    if (actionBar) actionBar.style.display = 'none';
+                    list.innerHTML = "لا توجد محاضرات."; 
+                }
             };
         }
 
-        function showToast() {
+        function showToast(customMessage) {
             const toast = document.getElementById('successToast');
+            if (customMessage) {
+                const toastSpan = toast.querySelector('span');
+                if (toastSpan) toastSpan.textContent = customMessage;
+            } else {
+                const toastSpan = toast.querySelector('span');
+                if (toastSpan) toastSpan.textContent = 'تم الحفظ بنجاح';
+            }
             toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2000);
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        // --- Helper to load months for any teacher select ---
+        async function loadMonthsForTarget(year, target) {
+            target.innerHTML = '<option value="_uncategorized_">غير مصنف</option>';
+            const snap = await database.ref(`months/${year}`).once('value');
+            if (snap.exists()) {
+                Object.entries(snap.val()).forEach(([id, m]) => {
+                    target.add(new Option(m.name, id));
+                });
+            }
         }
 
         // --- دالة حفظ الحجم في الداتابيز ---
@@ -624,7 +884,7 @@
                 
                 // Re-calculate total without refreshing
                 updateTotalSize();
-                showToast();
+                showToast('تم حفظ الحجم بنجاح');
 
                 setTimeout(() => {
                     saveBtn.disabled = false;
@@ -704,7 +964,7 @@
                 if(titleDisp) titleDisp.textContent = newT;
                 if(numDisp) numDisp.textContent = newNum;
                 
-                showToast();
+                showToast('تم تعديل المحاضرة بنجاح');
                 document.getElementById('editPathModal').style.display = 'none';
                 
                 btn.disabled = false;
@@ -716,34 +976,313 @@
             }
         };
 
-        window.cloneLec = async (id) => {
-            const original = currentLecturesData[id];
-            if(!original) return;
+        // --- Copy Logic (Single & Bulk: Lectures, Posts, Exams) ---
+        let copyMode = 'single'; // 'single' or 'all'
+        let copySelectedLectureId = null;
+        let currentPostsData = {};
+        let currentExamsData = {};
+
+        window.openCopyModal = async (mode, id = null) => {
+            copyMode = mode;
+            copySelectedLectureId = id;
+
+            const modal = document.getElementById('copyModal');
+            const titleElem = document.getElementById('copyModalTitle');
+            const infoElem = document.getElementById('copyTargetInfo');
+            const typesSection = document.getElementById('copyTypesSection');
+            const progressContainer = document.getElementById('copyProgressContainer');
+            const confirmBtn = document.getElementById('confirmCopyBtn');
+            const customSection = document.getElementById('customDestSection');
+            const teacherSelect = document.getElementById('copyTargetTeacherSelect');
+            const monthSelect = document.getElementById('copyTargetMonthSelect');
+            const radioHere = document.getElementById('copyDestHere');
+            const radioCustom = document.getElementById('copyDestCustom');
+            const hereLabel = document.getElementById('copyDestHereLabel');
             
-            const newId = Date.now().toString();
-            const newNum = (parseInt(original.lectureNumber) || 0) + 1;
+            progressContainer.style.display = 'none';
+            confirmBtn.disabled = false;
+            document.getElementById('confirmCopyText').textContent = 'بدء النسخ';
+
+            const currentTeacher = document.getElementById('deleteYear').value;
+            const currentMonthSelect = document.getElementById('deleteMonth');
+            const currentMonthText = currentMonthSelect.options[currentMonthSelect.selectedIndex]?.text || currentMonthSelect.value;
+            const currentMonth = currentMonthSelect.value;
+
+            hereLabel.innerHTML = `<strong>نسخ هنا</strong> (نفس المكان: ${currentTeacher} - ${currentMonthText})`;
+
+            // Populate teacher select if empty or updated
+            teacherSelect.innerHTML = '';
+            teacherList.forEach(t => teacherSelect.add(new Option(t, t)));
+            teacherSelect.onchange = () => loadMonthsForTarget(teacherSelect.value, monthSelect);
             
-            const dbPath = original.month === '_uncategorized_' 
-                ? `lectures/${original.year}/${newId}` 
-                : `lectures/${original.year}/${original.month}/${newId}`;
-                
-            try {
-                const cloneData = {
-                    ...original,
-                    id: newId,
-                    lectureNumber: newNum.toString(),
-                    timestamp: newId
-                };
-                
-                await database.ref(dbPath).set(cloneData);
-                
-                // Show toast and refresh list (simpler than manual DOM insertion for complex items)
-                showToast();
-                // Instead of full click, we could insert but clicking Search is safer for maintaining correct order and UI state
-                document.getElementById('showDeleteButton').click();
-            } catch(e) {
-                alert("فشل نسخ المحاضرة: " + e.message);
+            // Default target teacher to current teacher
+            teacherSelect.value = currentTeacher;
+            await loadMonthsForTarget(teacherSelect.value, monthSelect);
+
+            if (mode === 'single') {
+                const lec = currentLecturesData[id];
+                if (!lec) return;
+                titleElem.innerHTML = `<i class="fas fa-copy" style="margin-left: 8px; color: var(--primary-color);"></i> نسخ المحاضرة`;
+                infoElem.innerHTML = `المحاضرة المحددة: <strong>${lec.title || 'بدون عنوان'}</strong> (رقم: ${lec.lectureNumber || 'غير محدد'})`;
+                typesSection.style.display = 'none';
+                radioHere.checked = true;
+                customSection.style.display = 'none';
+            } else {
+                const validLectures = Object.values(currentLecturesData).filter(l => l && l.title);
+                typesSection.style.display = 'block';
+                document.getElementById('copyIncludeLectures').checked = true;
+                document.getElementById('copyIncludePosts').checked = true;
+                document.getElementById('copyIncludeExams').checked = true;
+
+                document.getElementById('lecturesCountSpan').textContent = `(${validLectures.length})`;
+                document.getElementById('postsCountSpan').textContent = '...';
+                document.getElementById('examsCountSpan').textContent = '...';
+
+                titleElem.innerHTML = `<i class="fas fa-clone" style="margin-left: 8px; color: var(--primary-color);"></i> نسخ المحتوى والمحاضرات`;
+                infoElem.innerHTML = `المصدر: <strong>${currentTeacher}</strong> - الشهر: <strong>${currentMonthText}</strong>`;
+                radioCustom.checked = true;
+                customSection.style.display = 'block';
+
+                modal.style.display = 'block';
+
+                // Fetch posts in background for current teacher
+                try {
+                    const postsSnap = await database.ref(`posts/${currentTeacher}`).once('value');
+                    currentPostsData = postsSnap.val() || {};
+                    const postsCount = Object.keys(currentPostsData).length;
+                    document.getElementById('postsCountSpan').textContent = `(${postsCount})`;
+                } catch (err) {
+                    currentPostsData = {};
+                    document.getElementById('postsCountSpan').textContent = '(0)';
+                }
+
+                // Fetch exams in background for current teacher
+                try {
+                    const examsSnap = await database.ref(`exams/${currentTeacher}`).once('value');
+                    currentExamsData = examsSnap.val() || {};
+                    const allExams = Object.entries(currentExamsData);
+                    let matchingExams = allExams;
+                    if (currentMonth !== '_uncategorized_') {
+                        const byMonth = allExams.filter(([k, ex]) => ex && ex.monthKey === currentMonth);
+                        if (byMonth.length > 0) matchingExams = byMonth;
+                    }
+                    document.getElementById('examsCountSpan').textContent = `(${matchingExams.length})`;
+                } catch (err) {
+                    currentExamsData = {};
+                    document.getElementById('examsCountSpan').textContent = '(0)';
+                }
+
+                return;
             }
+
+            modal.style.display = 'block';
+        };
+
+        document.getElementById('copyDestHere').onchange = () => {
+            document.getElementById('customDestSection').style.display = 'none';
+        };
+        document.getElementById('copyDestCustom').onchange = () => {
+            document.getElementById('customDestSection').style.display = 'block';
+        };
+
+        document.getElementById('confirmCopyBtn').onclick = async () => {
+            const isCustom = document.getElementById('copyDestCustom').checked;
+            const currentTeacher = document.getElementById('deleteYear').value;
+            const currentMonth = document.getElementById('deleteMonth').value;
+
+            let targetTeacher = currentTeacher;
+            let targetMonth = currentMonth;
+
+            if (isCustom) {
+                targetTeacher = document.getElementById('copyTargetTeacherSelect').value;
+                targetMonth = document.getElementById('copyTargetMonthSelect').value;
+                if (!targetTeacher || !targetMonth) {
+                    alert("يرجى اختيار المدرس والشهر المستهدف.");
+                    return;
+                }
+            }
+
+            const confirmBtn = document.getElementById('confirmCopyBtn');
+            const confirmText = document.getElementById('confirmCopyText');
+            const progressContainer = document.getElementById('copyProgressContainer');
+            const progressBar = document.getElementById('copyProgressBar');
+            const progressText = document.getElementById('copyProgressText');
+            const progressPercent = document.getElementById('copyProgressPercent');
+
+            confirmBtn.disabled = true;
+            confirmText.textContent = 'جاري النسخ...';
+            progressContainer.style.display = 'block';
+            progressBar.style.width = '0%';
+            progressPercent.textContent = '0%';
+            progressText.textContent = 'جاري النسخ...';
+
+            try {
+                if (copyMode === 'single') {
+                    const original = currentLecturesData[copySelectedLectureId];
+                    if (!original) throw new Error("المحاضرة غير موجودة");
+
+                    const newId = Date.now().toString();
+                    const isSamePlace = (targetTeacher === original.year && targetMonth === original.month);
+                    const newNum = isSamePlace ? ((parseInt(original.lectureNumber) || 0) + 1).toString() : (original.lectureNumber || '1');
+
+                    const dbPath = targetMonth === '_uncategorized_' 
+                        ? `lectures/${targetTeacher}/${newId}` 
+                        : `lectures/${targetTeacher}/${targetMonth}/${newId}`;
+
+                    const cloneData = {
+                        ...original,
+                        id: newId,
+                        year: targetTeacher,
+                        month: targetMonth,
+                        lectureNumber: newNum,
+                        timestamp: newId
+                    };
+
+                    await database.ref(dbPath).set(cloneData);
+
+                    progressBar.style.width = '100%';
+                    progressPercent.textContent = '100%';
+                    progressText.textContent = 'تم النسخ بنجاح!';
+                    
+                    showToast('تم نسخ المحاضرة بنجاح');
+                    setTimeout(() => {
+                        document.getElementById('copyModal').style.display = 'none';
+                        if (targetTeacher === currentTeacher && targetMonth === currentMonth) {
+                            document.getElementById('showDeleteButton').click();
+                        }
+                    }, 600);
+
+                } else {
+                    // Multi-Type Copy (Lectures, Posts, Exams)
+                    const incLectures = document.getElementById('copyIncludeLectures').checked;
+                    const incPosts = document.getElementById('copyIncludePosts').checked;
+                    const incExams = document.getElementById('copyIncludeExams').checked;
+
+                    if (!incLectures && !incPosts && !incExams) {
+                        alert("يرجى تحديد عنصر واحد على الأقل للنسخ (محاضرات أو بوستات أو امتحانات).");
+                        confirmBtn.disabled = false;
+                        confirmText.textContent = 'بدء النسخ';
+                        progressContainer.style.display = 'none';
+                        return;
+                    }
+
+                    const lecturesToCopy = incLectures ? Object.values(currentLecturesData).filter(l => l && l.title) : [];
+                    const postsToCopy = incPosts ? Object.entries(currentPostsData) : [];
+                    
+                    let examsToCopy = [];
+                    if (incExams) {
+                        const allExams = Object.entries(currentExamsData);
+                        if (currentMonth !== '_uncategorized_') {
+                            const byMonth = allExams.filter(([k, ex]) => ex && ex.monthKey === currentMonth);
+                            examsToCopy = byMonth.length > 0 ? byMonth : allExams;
+                        } else {
+                            examsToCopy = allExams;
+                        }
+                    }
+
+                    const grandTotal = lecturesToCopy.length + postsToCopy.length + examsToCopy.length;
+                    if (grandTotal === 0) {
+                        alert("لا توجد عناصر متاحة للنسخ ضمن الخيارات المحددة.");
+                        confirmBtn.disabled = false;
+                        confirmText.textContent = 'بدء النسخ';
+                        progressContainer.style.display = 'none';
+                        return;
+                    }
+
+                    let processedCount = 0;
+                    const baseTimestamp = Date.now();
+
+                    // 1. Copy Lectures
+                    for (let i = 0; i < lecturesToCopy.length; i++) {
+                        const lec = lecturesToCopy[i];
+                        const newId = (baseTimestamp + (i * 10)).toString();
+                        const isSamePlace = (targetTeacher === lec.year && targetMonth === lec.month);
+                        const newNum = isSamePlace ? ((parseInt(lec.lectureNumber) || 0) + 100).toString() : (lec.lectureNumber || (i + 1).toString());
+
+                        const dbPath = targetMonth === '_uncategorized_' 
+                            ? `lectures/${targetTeacher}/${newId}` 
+                            : `lectures/${targetTeacher}/${targetMonth}/${newId}`;
+
+                        const cloneData = {
+                            ...lec,
+                            id: newId,
+                            year: targetTeacher,
+                            month: targetMonth,
+                            lectureNumber: newNum,
+                            timestamp: newId
+                        };
+
+                        await database.ref(dbPath).set(cloneData);
+                        processedCount++;
+                        const percent = Math.round((processedCount / grandTotal) * 100);
+                        progressBar.style.width = `${percent}%`;
+                        progressPercent.textContent = `${percent}%`;
+                        progressText.textContent = `جاري نسخ المحاضرات (${i + 1} من ${lecturesToCopy.length})...`;
+                    }
+
+                    // 2. Copy Posts
+                    for (let j = 0; j < postsToCopy.length; j++) {
+                        const [origPostKey, postObj] = postsToCopy[j];
+                        if (!postObj) continue;
+                        const newPostKey = (baseTimestamp + 100000 + (j * 10)).toString();
+                        const postDbPath = `posts/${targetTeacher}/${newPostKey}`;
+
+                        const postCloneData = {
+                            ...postObj,
+                            timestamp: new Date().toISOString()
+                        };
+
+                        await database.ref(postDbPath).set(postCloneData);
+                        processedCount++;
+                        const percent = Math.round((processedCount / grandTotal) * 100);
+                        progressBar.style.width = `${percent}%`;
+                        progressPercent.textContent = `${percent}%`;
+                        progressText.textContent = `جاري نسخ البوستات (${j + 1} من ${postsToCopy.length})...`;
+                    }
+
+                    // 3. Copy Exams
+                    for (let k = 0; k < examsToCopy.length; k++) {
+                        const [origExamKey, examObj] = examsToCopy[k];
+                        if (!examObj) continue;
+                        const newExamKey = `exam_${baseTimestamp}_${k + 1}`;
+                        const examDbPath = `exams/${targetTeacher}/${newExamKey}`;
+
+                        const examCloneData = {
+                            ...examObj,
+                            monthKey: targetMonth,
+                            createdAt: Date.now()
+                        };
+
+                        await database.ref(examDbPath).set(examCloneData);
+                        processedCount++;
+                        const percent = Math.round((processedCount / grandTotal) * 100);
+                        progressBar.style.width = `${percent}%`;
+                        progressPercent.textContent = `${percent}%`;
+                        progressText.textContent = `جاري نسخ الامتحانات (${k + 1} من ${examsToCopy.length})...`;
+                    }
+
+                    const summaryParts = [];
+                    if (lecturesToCopy.length > 0) summaryParts.push(`${lecturesToCopy.length} محاضرة`);
+                    if (postsToCopy.length > 0) summaryParts.push(`${postsToCopy.length} بوست`);
+                    if (examsToCopy.length > 0) summaryParts.push(`${examsToCopy.length} امتحان`);
+
+                    showToast(`تم نسخ ${summaryParts.join(' و ')} بنجاح!`);
+                    setTimeout(() => {
+                        document.getElementById('copyModal').style.display = 'none';
+                        if (targetTeacher === currentTeacher && targetMonth === currentMonth) {
+                            document.getElementById('showDeleteButton').click();
+                        }
+                    }, 600);
+                }
+            } catch (e) {
+                alert("فشل النسخ: " + e.message);
+                confirmBtn.disabled = false;
+                confirmText.textContent = 'بدء النسخ';
+            }
+        };
+
+        window.cloneLec = (id) => {
+            openCopyModal('single', id);
         };
 
         window.deleteLec = async (year, month, id) => {
@@ -759,19 +1298,31 @@
                 
                 document.getElementById(`item_${id}`)?.remove();
                 delete currentLecturesData[id];
+                
+                // Update lectures count badge
+                const validCount = Object.keys(currentLecturesData).filter(k => currentLecturesData[k]?.title).length;
+                const countBadge = document.getElementById('lecturesCountBadge');
+                const actionBar = document.getElementById('lecturesActionBar');
+                if (countBadge) countBadge.textContent = validCount;
+                if (validCount === 0 && actionBar) actionBar.style.display = 'none';
+
                 updateTotalSize();
-                showToast();
+                showToast('تم حذف المحاضرة');
             } catch(e) { alert("خطأ بالحذف"); }
         };
 
         // Modal Close Logic
         document.getElementById('closeModal').onclick = () => document.getElementById('deleteModal').style.display = 'none';
         document.getElementById('closeEditModal').onclick = () => document.getElementById('editPathModal').style.display = 'none';
+        document.getElementById('closeCopyModal').onclick = () => document.getElementById('copyModal').style.display = 'none';
+        document.getElementById('cancelCopyBtn').onclick = () => document.getElementById('copyModal').style.display = 'none';
         
         window.onclick = (e) => {
             if(e.target.className === 'modal') {
                 document.getElementById('deleteModal').style.display = 'none';
                 document.getElementById('editPathModal').style.display = 'none';
+                document.getElementById('portfolioModal').style.display = 'none';
+                document.getElementById('copyModal').style.display = 'none';
             }
         };
 
